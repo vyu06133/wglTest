@@ -1,0 +1,268 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="glsl">
+      <UniqueIdentifier>{399d4bd9-85a2-47a0-b899-ec719286adf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="any">
+      <UniqueIdentifier>{6f2f48b0-a288-464d-b900-181992d39bfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="any\any">
+      <UniqueIdentifier>{49a50b97-4f46-462b-ab79-61f5c2cf419a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="glsl\NewFilter1">
+      <UniqueIdentifier>{3058aada-93cb-4bb9-a86f-c08bda2a3cc9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="wglTest.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Console.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="TaskBase.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="TaskSystem.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="FBXAsset.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="fps.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Fsm.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="MyMath.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="MyUtil.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="obb.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="App.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image_write.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="binpacker.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Clock.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="font.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture2D.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Gamepad.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="testtask.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="UBO.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="AssimpAsset.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="wglTest.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Console.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="TaskBase.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="TaskSystem.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="FBXAsset.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="MyMath.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="MyUtil.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="App.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="font.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture2D.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyboard.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Gamepad.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="AssimpAsset.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="wglTest.rc">
+      <Filter>リソース ファイル</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="small.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="wglTest.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Revision.src" />
+    <None Include="Revision.inc">
+      <Filter>ヘッダー ファイル</Filter>
+    </None>
+    <None Include="glsl\shader.glsl">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="glsl\shader.vert">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="glsl\shader.frag">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="glsl\HUD.frag">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="glsl\HUD.vert">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="glsl\Simple.frag">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="glsl\Simple.vert">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="glsl\basic.vert">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="glsl\basic.frag">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="glsl\directional.fs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\directional.vs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\fog.fs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\fog.vs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\halfway.fs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\halfway.vs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\multilight.frag">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\multilight.vert">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\perfrag.fs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\perfrag.vs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\spot.fs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\spot.vs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\toon.fs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\toon.vs">
+      <Filter>glsl\NewFilter1</Filter>
+    </None>
+    <None Include="glsl\common.inc">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="glenummap.inc">
+      <Filter>ヘッダー ファイル</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="any\any\TinyXML.Static.txt">
+      <Filter>any\any</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

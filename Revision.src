@@ -1,0 +1,7 @@
+﻿// リビジョン文字列自動設定
+// ビルド前ステップでsubwcrevでこのテキストからWCREVをワーキングコピーのリビジョンを文字列に変換する。
+
+#pragma once
+
+ static const char* project_revision = "rev $WCREV$";
+ static const char* project_url = "$WCURL$";
