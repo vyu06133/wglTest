@@ -3,6 +3,6 @@
 
 #pragma once
 
- inline static const char* project_revision = "rev $WCREV$";
- inline static const char* project_url = "$WCURL$";
- inline static const char* project_branch = "$WCBRANCH$";
+ inline static const char* project_revision = "revision='$WCREV$'";
+ inline static const char* project_url = "url='$WCURL$'";
+ inline static const char* project_branch = "branch='$WCBRANCH$'";

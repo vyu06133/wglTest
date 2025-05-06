@@ -24,6 +24,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	MyUtil::Init("JA-jp");
 	auto app = App::CreateInstance();
 	ASSERT(app);
+	puts(project_revision);
+	puts(project_branch);
 	auto retcode = app->wWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 	App::DestroyInstance();
 	Console::Free();
