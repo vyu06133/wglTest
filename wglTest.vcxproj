@@ -122,8 +122,8 @@
       <AdditionalOptions>/IGNORE:4099,4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PreBuildEvent>
-      <Command>where subwcrev
-if %errorlevel% equ 0 subwcrev  "$(SolutionDir)." "Revision.src" "Revision.inc" -q</Command>
+      <Command>where gitwcrev
+if %errorlevel% equ 0 gitwcrev  "$(SolutionDir)." "Revision.src" "Revision.inc" -q</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -146,8 +146,8 @@ if %errorlevel% equ 0 subwcrev  "$(SolutionDir)." "Revision.src" "Revision.inc" 
       <AdditionalOptions>/IGNORE:4099,4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PreBuildEvent>
-      <Command>where subwcrev
-if %errorlevel% equ 0 subwcrev  "$(SolutionDir)." "Revision.src" "Revision.inc" -q</Command>
+      <Command>where gitwcrev
+if %errorlevel% equ 0 gitwcrev  "$(SolutionDir)." "Revision.src" "Revision.inc" -q</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
