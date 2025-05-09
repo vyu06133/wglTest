@@ -7,12 +7,14 @@ in vec4 vertColor;
 in vec2 vertTex;
 in vec3 vertTangent;
 
-//layout(location = 0) out vec4 FragColor;
 out vec4 FragColor;
 
 void main()
 {
-	//vec4(u_Material.AmbientColor,1);
+	FragColor=vec4(u_Material.AmbientColor,1);
+	FragColor=vertColor;
+//	FragColor=vec4(0,1,0,1);
+	return;
 	//vec4(Ads(0,vec4(vertPos,1),vertNormal),1);
 	if (u_EnableTexture!=0)
 	{

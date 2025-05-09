@@ -1032,10 +1032,10 @@ bool FBXAsset::ParseMeshAttr(MeshInfo* meshinfo)
 	}
 #endif
 #pragma endregion
-for (auto i = 0u; i < pointsCount; i++)
-{
-	meshinfo->vbuf_[i].color = meshinfo->vbuf_[i].weight.Weights;//noto:BONEWEIGHTをCOLORに移動
-}
+//for (auto i = 0u; i < pointsCount; i++)
+//{
+//	meshinfo->vbuf_[i].color = meshinfo->vbuf_[i].weight.Weights;//noto:BONEWEIGHTをCOLORに移動
+//}
 
 	return true;
 }

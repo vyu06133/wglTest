@@ -73,6 +73,7 @@ DeformOut Skinning(DeformIn di)
 		{
 			o.position = di.position;
 			o.normal = di.normal;
+			o.color = di.color;
 			o.tangent = di.tangent;
 			return o;
 		}
@@ -84,6 +85,7 @@ DeformOut Bypass(DeformIn i)
 	DeformOut o;
 	o.position = i.position;
 	o.normal = i.normal;
+	o.color = i.color;
 	o.tangent = i.tangent;
 	return o;
 }
@@ -101,18 +103,15 @@ void main()
 	if (u_EnableDeform != 0)
 	{
 		o = Skinning(di);
-		vertColor = o.color;
-		vertTex = cpu_tex;
 	}
 	else
 	{
 		o = Bypass(di);
-		vertColor = o.color;
-		vertTex = cpu_tex;
 	}
 	
 	vertPos = (u_Constants.worldViewProj * vec4(o.position, 1.0f)).xyz;
 	vertNormal = o.normal;
+	vertColor = o.color;
 	vertTex = cpu_tex;
 	vertTangent = o.tangent;
 	gl_Position = u_Constants.worldViewProj * vec4(o.position, 1.0);

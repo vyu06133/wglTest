@@ -2,6 +2,7 @@
 
 #include "TaskBase.h"
 #include "FBXAsset.h"
+#include "AssimpAsset.h"
 
 class GameInstance
 {
@@ -409,6 +410,136 @@ public:
 	virtual void OnDestroy() {}
 };
 
+class ASSIMP : public TaskBase
+{
+public:
+	AssimpAsset assimp_;
+	VertexBuffer<VertexPNCTAW> m_pnctaw;
+	VertexBuffer<VertexPNCT> m_pnct;
+	VertexBuffer<VertexPC> m_pc;
+	virtual void OnTick(float deltaTime)
+	{
+		auto app = ts->GetApp();
+		auto& kb = app->m_Keyboard;
+		//if (kb.GetKeyDown(DIK_0))assimp_.SelectAnim(0);
+		//if (kb.GetKeyDown(DIK_1))assimp_.SelectAnim(1);
+		//if (kb.GetKeyDown(DIK_2))assimp_.SelectAnim(2);
+		//if (kb.GetKeyDown(DIK_3))assimp_.SelectAnim(3);
+		//if (kb.GetKeyDown(DIK_4))assimp_.SelectAnim(4);
+		//if (kb.GetKeyDown(DIK_5))assimp_.SelectAnim(5);
+		//if (kb.GetKeyDown(DIK_6))assimp_.SelectAnim(6);
+		//if (kb.GetKeyDown(DIK_7))assimp_.SelectAnim(7);
+		//if (kb.GetKeyDown(DIK_8))assimp_.SelectAnim(8);
+
+		assimp_.Update(deltaTime);
+	}
+	virtual void OnDraw()
+	{
+		auto app = ts->GetApp();
+		auto& prog = app->m_BasicShader;
+		app->m_LightInfo.SendToGPU();
+		auto& constants = app->m_Constants;
+		constants.Data().SetWorld(worldMatrix);
+		constants.SendToGPU();
+//
+//		auto& material = app->m_Material;
+//		//		app->m_Material.Data().diffuseColor = vec4(1.0f);//test:
+//		//		app->m_Material.Data().specularColor = vec4(0.0f, 1.0f, 0.0f,1.0f);//test:
+//		//		app->m_Material.Data().shininess = 30.0f;//test:
+//		app->m_Material.SendToGPU();//test:
+//		//app->m_Material.Data().ambientColor = vec4(MyMath::Abs(MyMath::Sin(elapsed) * 5.f), 0, MyMath::Abs(MyMath::Sin(elapsed * 1.f)), 1.0f);
+//		//app->m_Material.Data().emmisiveColor;// = vec4(MyMath::mt.randf(), MyMath::mt.randf(), MyMath::mt.randf(), 1.0f);
+//
+//		std::vector<VertexPNCT> wire;
+////		assimp_.RenderWire(&wire);
+//		m_pnct.UpdateData(wire);
+//		m_pnct.Bind();
+//		//		glDrawArrays(GL_TRIANGLES, 0, m_pnct.GetVertexCount());
+//
+//		std::vector<VertexPNCT> m;
+//		std::vector<VertexPNCTAW> pnctaw;
+//		prog.UpdateUniformu("u_EnableTexture", 0);
+////		for (auto i = 0u; i < assimp_.GetMeshCount(); i++)
+//		{
+//			for (auto j = 0u; j < assimp_.GetMaterialCount(i); j++)
+//			{
+//				auto mi = assimp_.GetMaterial(i, j);
+//				material.Data().ambientColor = vec4(mi->ambient.rgb, 1.0f);
+//				material.Data().diffuseColor = vec4(mi->diffuse.rgb, 1.0f);
+//				material.Data().emmisiveColor = vec4(mi->emmisive.rgb, 1.0f);
+//				material.Data().specularColor = vec4(mi->specular.rgb, 1.0f);
+//				material.Data().shininess = mi->shininess;
+//				if (mi && mi->texture)
+//				{
+//					auto d = material.Data();
+//					material.Data().diffuseColor = vec4(1.0f);//note:0‚Å‚ÍŒvŽZ‚³‚ê‚ÊH
+//					prog.UpdateUniformu("u_EnableTexture", 1);
+//					prog.UpdateUniformu("u_TextureUnit", mi->texture->TextureUnits());
+//					mi->texture->ApplyParameter();
+//					mi->texture->BindTexture();
+//				}
+//				material.Data().ambientColor = vec4(0.5);//test:
+//				material.Data().diffuseColor = vec4(0.5);//test:
+//				material.SendToGPU();
+//
+//
+//
+//#if SOFTWARE_DEFORM
+//				prog.UpdateUniformu("u_EnableDeform", 0);
+//				assimp_.GetWirePrim(i, j, &m);
+//				m_pnct.UpdateData(wire);
+//				m_pnct.Bind();
+//				//				glDrawArrays(GL_TRIANGLES, 0, m_pnct.GetVertexCount());
+//				glDrawArrays(GL_TRIANGLES, 0, m_pnct.GetVertexCount());
+//#else
+//				prog.UpdateUniformu("u_EnableDeform", 1);
+////				assimp_.GetDeformation(i, app->m_MatrixPalette.Data().Matrices, App::MatrixPalette::MAX_PALETTE_SIZE);
+//				app->m_MatrixPalette.SendToGPU();
+////				assimp_.GetMeshPrim(i, j, &pnctaw);
+//				m_pnctaw.UpdateData(pnctaw);
+//				m_pnctaw.Bind();
+//				glDrawArrays(GL_TRIANGLES, 0, m_pnctaw.GetVertexCount());
+//				//				glDrawArrays(GL_LINE_STRIP, 0, m_pnctaw.GetVertexCount());
+//#endif
+//			}
+//		}
+//
+		prog.UpdateUniformu("u_EnableDeform", 0);
+		std::vector<VertexPC> v;
+		assimp_.RenderBone(&v);
+		m_pc.UpdateData(v);
+		m_pc.Bind();
+//		glDrawArrays(GL_POINTS, 0, m_pc.GetVertexCount());
+		glDrawArrays(GL_LINES, 0, m_pc.GetVertexCount());
+	}
+	virtual void OnCreate()
+	{
+		auto app = ts->GetApp();
+		std::vector<VertexPC> pc;
+		std::vector<VertexPNCTAW> pnctaw;
+		assimp_.LoadAsset(//"Assets\\fbx\\256Ruru\\fbx\\Thriller Idle.fbx");
+		//assimp_.AddAnim("Assets\\fbx\\256Ruru\\fbx\\Thriller Part 1.fbx");
+		//assimp_.AddAnim("Assets\\fbx\\256Ruru\\fbx\\Thriller Part 2.fbx");
+		//assimp_.AddAnim("Assets\\fbx\\256Ruru\\fbx\\Thriller Part 3.fbx");
+		//assimp_.AddAnim("Assets\\fbx\\256Ruru\\fbx\\Thriller Part 4.fbx");
+		//assimp_.AddAnim(
+		"Assets\\fbx\\256Ruru\\fbx\\Hip Hop Dancing.fbx");
+		//assimp_.AddAnim("Assets\\fbx\\256Ruru\\fbx\\Punching Bag.fbx");
+		TRACE("Setup VertexPC for Bone\n");
+		pc.resize(assimp_.GetBonePrimCount());
+		m_pc.Setup(pc, GL_DYNAMIC_DRAW);
+		//m_pnct.Setup(nullptr, assimp_.GetWirePrimCount(), GL_DYNAMIC_DRAW);
+		TRACE("Setup VertexPNCTAW for Mesh\n");
+		//pnctaw.resize(assimp_.GetMeshPrimCount());
+		//m_pnctaw.ClearAttribPointer();
+		//m_pnctaw.Setup(pnctaw, GL_DYNAMIC_DRAW);
+		//		constants_.Gen();
+		//		constants_.Bind(app->m_BasicShader, "Constants");
+		//		material_.Gen();
+		//		material_.Bind(app->m_BasicShader, "Material");
+	}
+	virtual void OnDestroy() {}
+};
 
 class Hud : public TaskBase
 {
@@ -455,6 +586,7 @@ public:
 		ts3d->CreateTask<Camera>(nullptr, "Camera");
 		ts3d->CreateTask<Light>(nullptr, "Light");
 		ts3d->CreateTask<Field>(nullptr, "Field");
-		ts3d->CreateTask<FBX>(nullptr, "FBX");
+		//ts3d->CreateTask<FBX>(nullptr, "FBX");
+		ts3d->CreateTask<ASSIMP>(nullptr, "ASSIMP");
 	}
 };
