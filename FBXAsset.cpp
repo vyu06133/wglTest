@@ -1176,15 +1176,6 @@ void FBXAsset::GetPrimitive(uint32_t mesh, uint32_t material, PrimitiveBatchPNCT
 			auto b = m->vbuf_[m->ibuf_[i + 1]];
 			auto c = m->vbuf_[m->ibuf_[i + 2]];
 		//	a.normal = b.normal = c.normal = MyMath::CalcTriangleNormal(a.pos, b.pos, c.pos);
-		//	a.weight.Weight(0) = 1.0f;
-		//	b.weight.Weight(1) = 1.0f;
-		//	c.weight.Weight(2) = 1.0f;
-		//	a.weight.Weights = Vector4(0.0f, 0.0f, 1.0f, 0.0f);
-		//	b.weight.Weights = Vector4(0.0f, 0.0f, 1.0f, 0.0f);
-		//	c.weight.Weights = Vector4(0.0f, 0.0f, 1.0f, 0.0f);
-		//	a.tangent = Vector3(&a.weight.Weights.x);
-		//	b.tangent = Vector3(&b.weight.Weights.x);
-		//	c.tangent = Vector3(&c.weight.Weights.x);
 			primitive->DrawTriangle(c, b, a);
 		}
 	}

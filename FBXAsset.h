@@ -55,43 +55,6 @@ inline static glm::mat4 ToMyMat(const fbxsdk::FbxAMatrix fbxAMat)
 	fbxsdk::FbxMatrix fbxMat(fbxAMat);
 	return ToMyMat(fbxMat);
 }
-#else
-using MyMat = DirectX::SimpleMath::Matrix;
-inline static SimpleMath::Vector3 MyTransform(const SimpleMath::Matrix& m, const SimpleMath::Vector3& v)
-{
-	return Vector3::Transform(v, m);
-}
-
-inline static SimpleMath::Vector3 MyTransformNormal(const SimpleMath::Matrix& m, const SimpleMath::Vector3& v)
-{
-	return Vector3::TransformNormal(v, m);
-}
-
-inline static Matrix ToMyMat(const fbxsdk::FbxMatrix& fbxMat)
-{
-	Matrix dxMat;
-
-	for (int row = 0; row < 4; row++)
-	{
-		for (int col = 0; col < 4; col++)
-		{
-			dxMat(row, col) = static_cast<float>(fbxMat.Get(row, col));
-		}
-	}
-
-	return dxMat;
-}
-
-inline static Matrix ToMyMat(const fbxsdk::FbxAMatrix fbxAMat)
-{
-	fbxsdk::FbxMatrix fbxMat(fbxAMat);
-	return ToMyMat(fbxMat);
-}
-
-inline static Matrix ToMyMat(const SimpleMath::Matrix& m)
-{
-	return m;
-}
 
 #endif
 

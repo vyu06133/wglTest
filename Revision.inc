@@ -3,6 +3,6 @@
 
 #pragma once
 
- inline static const char* project_revision = "revision='78ab368d5c78693e1a9e7a83c62f06782b75fa98'";
+ inline static const char* project_revision = "revision='5056763617685cdcc11324d202c8a71aff1a3c80'";
  inline static const char* project_url = "url='$WCURL$'";
  inline static const char* project_branch = "branch='main'";

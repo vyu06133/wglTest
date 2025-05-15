@@ -2,7 +2,7 @@
 
 #include "TaskBase.h"
 #include "FBXAsset.h"
-#include "AssimpAsset.h"
+//#include "AssimpAsset.h"
 
 class GameInstance
 {
@@ -410,6 +410,7 @@ public:
 	virtual void OnDestroy() {}
 };
 
+#if 0
 class ASSIMP : public TaskBase
 {
 public:
@@ -540,6 +541,7 @@ public:
 	}
 	virtual void OnDestroy() {}
 };
+#endif
 
 class Hud : public TaskBase
 {
@@ -586,7 +588,7 @@ public:
 		ts3d->CreateTask<Camera>(nullptr, "Camera");
 		ts3d->CreateTask<Light>(nullptr, "Light");
 		ts3d->CreateTask<Field>(nullptr, "Field");
-		//ts3d->CreateTask<FBX>(nullptr, "FBX");
-		ts3d->CreateTask<ASSIMP>(nullptr, "ASSIMP");
+		ts3d->CreateTask<FBX>(nullptr, "FBX");
+		//ts3d->CreateTask<ASSIMP>(nullptr, "ASSIMP");
 	}
 };
