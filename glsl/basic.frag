@@ -12,16 +12,12 @@ out vec4 FragColor;
 void main()
 {
 
-	if (u_EnableFixedColor!=0)
+	if (u_EnablePrimitiveColor!=0)
 	{
-		if (u_EnablePrimitiveColor!=0)
-		{
-			FragColor = vertColor;
-		}
+		if (u_EnableTexture != 0)
+			FragColor = vertColor * texture(u_TextureUnit, vertTexcoord);
 		else
-		{
-			FragColor = u_FixedColor;
-		}
+			FragColor = vertColor;
 	}
 	else
 	{

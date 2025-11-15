@@ -417,52 +417,62 @@ public:
 		auto& material = app->m_Material;
 		prog.UpdateUniformu("u_EnableTexture", 0);
 		prog.UpdateUniformu("u_EnableLighting", 0);
-		std::vector<VertexPC> pc;
 #if 0//bone
-		mmd_.DrawBone(&pc);
-		glLineWidth(3.0f);
-		pc_.Begin(GL_LINES);
-		pc_.Vertex(pc);
-		pc_.End();
+		{
+			std::vector<VertexPC> pc;
+			mmd_.DrawBone(&pc);
+			glLineWidth(3.0f);
+			pc_.Begin(GL_LINES);
+			pc_.Vertex(pc);
+			pc_.End();
+		}
 #endif
 
-#if 0//bounding box
-		mmd_.DrawBoneBbox(&pc);
-		glLineWidth(1.0f);
-		pc_.Begin(GL_LINES);
-		pc_.Vertex(pc);
-		pc_.End();
+#if 1//bounding box
+		{
+			prog.UpdateUniformu("u_EnablePrimitiveColor", 1);
+			std::vector<VertexPC> pc;
+			mmd_.DrawBoneBbox(&pc);
+			glLineWidth(1.0f);
+			pc_.Begin(GL_LINES);
+			pc_.Vertex(pc);
+			pc_.End();
+		}
 #endif
 
 		//		glEnable(GL_DEPTH_TEST);
-if(1)
-		for(auto m = 0u; m < mmd_.GetMaterialCount(); m++)
+#if 1
 		{
-			auto mat = mmd_.GetMaterial(m);
-			//TRACE("%u %u %s\n", m, mat.vertexCount, mat.texname.c_str());
-			material.Data().ambientColor = mat.ambient.rgb;
-			material.Data().diffuseColor = vec3(1.0f);// mat.diffuse.rgb;
-			//material.Data().emmisiveColor = mat.emmisive;
-			material.Data().specularColor = mat.specular.rgb;
-			material.Data().shininess = mat.specular.a;
-			material.SendToGPU();
+			prog.UpdateUniformu("u_EnablePrimitiveColor", 0);
+			for (auto m = 0u; m < mmd_.GetMaterialCount(); m++)
+			{
+				auto mat = mmd_.GetMaterial(m);
+				//TRACE("%u %u %s\n", m, mat.vertexCount, mat.texname.c_str());
+				material.Data().ambientColor = mat.ambient.rgb;
+				material.Data().diffuseColor = vec3(1.0f);// mat.diffuse.rgb;
+				//material.Data().emmisiveColor = mat.emmisive;
+				material.Data().specularColor = mat.specular.rgb;
+				material.Data().shininess = mat.specular.a;
+				material.SendToGPU();
 
-			auto tex2d = mat.tex2d;
-			if (tex2d)
-			{
-				prog.UpdateUniformu("u_EnableTexture", 1);
-				tex2d->BindTexture();
+				auto tex2d = mat.tex2d;
+				if (tex2d)
+				{
+					prog.UpdateUniformu("u_EnableTexture", 1);
+					tex2d->BindTexture();
+				}
+				else
+				{
+					prog.UpdateUniformu("u_EnableTexture", 0);
+				}
+				std::vector<VertexPNT> pnt;
+				mmd_.DrawMesh(m, &pnt);
+				pnt_.Begin(GL_TRIANGLES);
+				pnt_.Vertex(pnt);
+				pnt_.End();
 			}
-			else
-			{
-				prog.UpdateUniformu("u_EnableTexture", 0);
-			}
-			std::vector<VertexPNT> pnt;
-			mmd_.DrawMesh(m, &pnt);
-			pnt_.Begin(GL_TRIANGLES);
-			pnt_.Vertex(pnt);
-			pnt_.End();
 		}
+#endif
 		return;
 	}
 	virtual void OnCreate()
@@ -473,15 +483,16 @@ if(1)
 		std::string texdir = "Assets\\mmd\\Lat式ミク\\";
 		pmdFile = "Assets\\mmd\\alicia_solid\\alicia_solid.pmd";
 		texdir = "Assets\\mmd\\alicia_solid\\";
-		pmdFile = "Assets\\mmd\\制服JK(素体&モデル)v0.62\\水着JK_ビキニ.pmd";
-		texdir = "Assets\\mmd\\制服JK(素体&モデル)v0.62\\";
-		pmdFile = "Assets\\mmd\\20171102素体\\Ma_v20170227sam.pmd";
-		texdir = "Assets\\mmd\\20171102素体\\";
+//		pmdFile = "Assets\\mmd\\制服JK(素体&モデル)v0.62\\水着JK_ビキニ.pmd";
+//		texdir = "Assets\\mmd\\制服JK(素体&モデル)v0.62\\";
+//		pmdFile = "Assets\\mmd\\20171102素体\\Ma_v20170227sam.pmd";
+//		texdir = "Assets\\mmd\\20171102素体\\";
 		mmd_.LoadPMDFromFile(pmdFile);
 		auto vmdFile="Assets\\mmd\\bibbidiba_Short_Last〆付き_表情付き.vmd";
-		vmdFile = "Assets\\mmd\\OKPアバン（朝潮）.vmd";
-		vmdFile = "Assets\\mmd\\MMD_HOWL_ShortMotion.vmd";
+//		vmdFile = "Assets\\mmd\\OKPアバン（朝潮）.vmd";
+//		vmdFile = "Assets\\mmd\\MMD_HOWL_ShortMotion.vmd";
 //		vmdFile = "Assets\\mmd\\MMD_KonKoKonkonDanceMotion.vmd";
+		vmdFile = "Assets\\mmd\\ビリ モーション_01.vmd";
 		mmd_.LoadVMDFromFile(vmdFile);
 		mmd_.Prepare();
 		for (auto m = 0u; m < mmd_.GetMaterialCount(); m++)

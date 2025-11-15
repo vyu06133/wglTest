@@ -1413,7 +1413,7 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 		}
 	}
 	
-	inline static void AddWireCube(std::vector<VertexPC>* vert, const float size, const mat4& mat)
+	inline static void AddWireCube(std::vector<VertexPC>* vert, const float size, const mat4& mat, const vec4& color)
 	{
 //		vert->clear();
 
@@ -1436,43 +1436,42 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 			{ -1.0f,  1.0f,  1.0f,	1.0f }  // p7
 		};
 
-		vec4 c(1.0f);
 		// p0 -> p1
-		vert->push_back(VertexPC((mat * p[0]).xyz,c));
-		vert->push_back(VertexPC((mat * p[1]).xyz,c));
+		vert->push_back(VertexPC((mat * p[0]).xyz, color));
+		vert->push_back(VertexPC((mat * p[1]).xyz, color));
 		// p1 -> p2
-		vert->push_back(VertexPC((mat * p[1]).xyz,c));
-		vert->push_back(VertexPC((mat * p[2]).xyz,c));
+		vert->push_back(VertexPC((mat * p[1]).xyz, color));
+		vert->push_back(VertexPC((mat * p[2]).xyz, color));
 		// p2 -> p3
-		vert->push_back(VertexPC((mat * p[2]).xyz,c));
-		vert->push_back(VertexPC((mat * p[3]).xyz,c));
+		vert->push_back(VertexPC((mat * p[2]).xyz, color));
+		vert->push_back(VertexPC((mat * p[3]).xyz, color));
 		// p3 -> p0
-		vert->push_back(VertexPC((mat * p[3]).xyz,c));
-		vert->push_back(VertexPC((mat * p[0]).xyz,c));
+		vert->push_back(VertexPC((mat * p[3]).xyz, color));
+		vert->push_back(VertexPC((mat * p[0]).xyz, color));
 		// p4 -> p5
-		vert->push_back(VertexPC((mat * p[4]).xyz,c));
-		vert->push_back(VertexPC((mat * p[5]).xyz,c));
+		vert->push_back(VertexPC((mat * p[4]).xyz, color));
+		vert->push_back(VertexPC((mat * p[5]).xyz, color));
 		// p5 -> p6
-		vert->push_back(VertexPC((mat * p[5]).xyz,c));
-		vert->push_back(VertexPC((mat * p[6]).xyz,c));
+		vert->push_back(VertexPC((mat * p[5]).xyz, color));
+		vert->push_back(VertexPC((mat * p[6]).xyz, color));
 		// p6 -> p7
-		vert->push_back(VertexPC((mat * p[6]).xyz,c));
-		vert->push_back(VertexPC((mat * p[7]).xyz,c));
+		vert->push_back(VertexPC((mat * p[6]).xyz, color));
+		vert->push_back(VertexPC((mat * p[7]).xyz, color));
 		// p7 -> p4
-		vert->push_back(VertexPC((mat * p[7]).xyz,c));
-		vert->push_back(VertexPC((mat * p[4]).xyz,c));
+		vert->push_back(VertexPC((mat * p[7]).xyz, color));
+		vert->push_back(VertexPC((mat * p[4]).xyz, color));
 		// p0 -> p4
-		vert->push_back(VertexPC((mat * p[0]).xyz,c));
-		vert->push_back(VertexPC((mat * p[4]).xyz,c));
+		vert->push_back(VertexPC((mat * p[0]).xyz, color));
+		vert->push_back(VertexPC((mat * p[4]).xyz, color));
 		// p1 -> p5
-		vert->push_back(VertexPC((mat * p[1]).xyz,c));
-		vert->push_back(VertexPC((mat * p[5]).xyz,c));
+		vert->push_back(VertexPC((mat * p[1]).xyz, color));
+		vert->push_back(VertexPC((mat * p[5]).xyz, color));
 		// p2 -> p6
-		vert->push_back(VertexPC((mat * p[2]).xyz,c));
-		vert->push_back(VertexPC((mat * p[6]).xyz,c));
+		vert->push_back(VertexPC((mat * p[2]).xyz, color));
+		vert->push_back(VertexPC((mat * p[6]).xyz, color));
 		// p3 -> p7
-		vert->push_back(VertexPC((mat * p[3]).xyz,c));
-		vert->push_back(VertexPC((mat * p[7]).xyz,c));
+		vert->push_back(VertexPC((mat * p[3]).xyz, color));
+		vert->push_back(VertexPC((mat * p[7]).xyz, color));
 	}
 	
 	void mmd::MMDScene::DrawBone(std::vector<VertexPC>* pc)
@@ -1534,6 +1533,16 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 	{
 		//glDisable(GL_LIGHTING);
 		//glDisable(GL_DEPTH_TEST);
+		const vec4 collist[7] =
+		{
+			{1.0f, 0.0f, 0.0f, 1.0f},
+			{0.0f, 1.0f, 0.0f, 1.0f},
+			{0.0f, 0.0f, 1.0f, 1.0f},
+			{1.0f, 1.0f, 0.0f, 1.0f},
+			{1.0f, 0.0f, 1.0f, 1.0f},
+			{0.0f, 1.0f, 1.0f, 1.0f},
+			{1.0f, 1.0f, 1.0f, 1.0f},
+		};
 		pc->clear();
 
 		for (int i = 0; i < model_->bones_.size(); i++)
@@ -1545,7 +1554,7 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 			M *= glm::translate(b.min);								//	glMultMatrixf(glm::value_ptr(M));
 			M *= glm::scale(b.dim);									//	glMultMatrixf(glm::value_ptr(M));
 			M *= glm::translate(vec3(0.5f));						//	glMultMatrixf(glm::value_ptr(M));
-			AddWireCube(pc, 1.0f, M);
+			AddWireCube(pc, 1.0f, M, collist[i%7]);
 			//			glColor3f(collist[cidx][0], collist[cidx][1], collist[cidx][2]);
 			/*glutWireCube(1);*/
 		}
