@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="15.0">
+  <ItemGroup>
+    <GLEW-staticLibs Include="$(MSBuildThisFileDirectory)lib\$(Platform)\$(Configuration)\*.lib;glu32.lib;opengl32.lib"/>
+    <GLEW-staticIncl Include="$(MSBuildThisFileDirectory)include"/>
+    <GLEW-staticDefs Include="GLEW_STATIC"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <GLEW-staticLibraries>@(GLEW-staticLibs)</GLEW-staticLibraries>
+    <GLEW-staticIncludes>@(GLEW-staticIncl)</GLEW-staticIncludes>
+    <GLEW-staticDefinitions>@(GLEW-staticDefs)</GLEW-staticDefinitions>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(GLEW-staticIncludes);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>$(GLEW-staticDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(GLEW-staticLibraries);%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>
