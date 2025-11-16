@@ -1,4 +1,4 @@
-#version 400 core
+#version 330 core
 
 layout (location = 0) in vec3 a_position;
 layout (location = 2) in vec4 a_color;
@@ -18,6 +18,6 @@ void main()
     vec4 projected_pos = u_mvp * vec4(a_position, 1.0);
 
     vertPos = projected_pos.xyz; // 出力変数に代入
-    gl_Position = projected_pos;         // 最終位置として使用
+    gl_Position = projected_pos; // 最終位置として使用
 }	
 

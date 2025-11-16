@@ -1,4 +1,4 @@
-#version 400 core// 430ならばUniform blockのレイアウトでbinding=NとしてNでバインドできるはずあえて400
+#version 330 core	// 430ならばUniform blockのレイアウトでbinding=NとしてNでバインドできるはずあえて400
 #define MAX_PALETTE_SIZE	96
 #define MAX_LIGHT			8
 

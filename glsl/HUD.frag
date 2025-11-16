@@ -1,4 +1,4 @@
-#version 440 core
+#version 330 core
 in vec4 vertColor;
 in vec3 vertPos;
 in vec2 vertTex;
