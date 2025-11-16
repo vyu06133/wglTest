@@ -14,10 +14,10 @@ void main()
 {
 	vertColor = a_color;
 	vertTex = a_tex;
-    // プロジェクション行列を一度だけ適用
-    vec4 projected_pos = u_mvp * vec4(a_position, 1.0);
+	// プロジェクション行列を一度だけ適用
+	vec4 projected_pos = u_mvp * vec4(a_position, 1.0);
 
-    vertPos = projected_pos.xyz; // 出力変数に代入
-    gl_Position = projected_pos; // 最終位置として使用
+	vertPos = projected_pos.xyz; // 出力変数に代入
+	gl_Position = projected_pos; // 最終位置として使用
 }	
 

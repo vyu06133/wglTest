@@ -125,7 +125,8 @@
     </Link>
     <PreBuildEvent>
       <Command>where gitwcrev&gt;nul
-if %errorlevel% equ 0 gitwcrev  "$(SolutionDir)." "Revision.src" "Revision.inc" -q</Command>
+if %errorlevel% equ 0 gitwcrev  "$(SolutionDir)." "Revision.src" "Revision.inc" -q
+git update-index --skip-worktree Revision.inc</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>
@@ -154,7 +155,8 @@ if %errorlevel% equ 0 gitwcrev  "$(SolutionDir)." "Revision.src" "Revision.inc" 
     </Link>
     <PreBuildEvent>
       <Command>where gitwcrev&gt;nul
-if %errorlevel% equ 0 gitwcrev  "$(SolutionDir)." "Revision.src" "Revision.inc" -q</Command>
+if %errorlevel% equ 0 gitwcrev  "$(SolutionDir)." "Revision.src" "Revision.inc" -q
+git update-index --skip-worktree Revision.inc</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>
