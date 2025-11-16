@@ -1,4 +1,5 @@
-#version 330 core	// 430ならばUniform blockのレイアウトでbinding=NとしてNでバインドできるはずあえて400
+#version 450 compatibility
+// std140がゆるされるバージョンということで450 compatibility
 #define MAX_PALETTE_SIZE	96
 #define MAX_LIGHT			8
 
