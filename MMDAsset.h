@@ -42,7 +42,8 @@ public:
 	void Prepare();
 
 	void Update(float frameTime);
-	//void CalcBbox();
+	float GetFrameTime() const;
+
 	uint32_t GetMaterialCount() const;
 	Material GetMaterial(uint32_t materialIdx)const;
 	Texture2D* GetTexture(uint32_t materialIdx) const;

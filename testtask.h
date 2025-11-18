@@ -134,6 +134,7 @@ public:
 	{
 		auto app = ts->GetApp();
 		app->m_BasicShader.UpdateUniformu("u_EnableTexture", 0);
+		app->m_BasicShader.UpdateUniformu("u_EnablePrimitiveColor", 1);
 		app->m_Constants.Data().SetWorld(worldMatrix);
 //TRACE("%s	%s\n", __FUNCSIG__, glm::to_string(app->m_Constants.Data().eye).c_str());
 		app->m_Constants.SendToGPU();
@@ -428,20 +429,8 @@ public:
 		}
 #endif
 
-#if 1//bounding box
-		{
-			prog.UpdateUniformu("u_EnablePrimitiveColor", 1);
-			std::vector<VertexPC> pc;
-			mmd_.DrawBoneBbox(&pc);
-			glLineWidth(1.0f);
-			pc_.Begin(GL_LINES);
-			pc_.Vertex(pc);
-			pc_.End();
-		}
-#endif
-
 		//		glEnable(GL_DEPTH_TEST);
-#if 1
+#if 1//Mesh
 		{
 			prog.UpdateUniformu("u_EnablePrimitiveColor", 0);
 			for (auto m = 0u; m < mmd_.GetMaterialCount(); m++)
@@ -471,6 +460,18 @@ public:
 				pnt_.Vertex(pnt);
 				pnt_.End();
 			}
+		}
+#endif
+
+#if 1//bounding box
+		{
+			prog.UpdateUniformu("u_EnablePrimitiveColor", 1);
+			std::vector<VertexPC> pc;
+			mmd_.DrawBoneBbox(&pc);
+			glLineWidth(1.0f);
+			pc_.Begin(GL_LINES);
+			pc_.Vertex(pc);
+			pc_.End();
 		}
 #endif
 		return;
@@ -510,7 +511,6 @@ public:
 		}
 		pc_.Init(app->m_BasicShader, 3600);
 		pnt_.Init(app->m_BasicShader, 30000/*mmd_.GetVerticesCount()*/);
-		TRACE("Setup VertexPNCTAW for Mesh\n");
 		//		constants_.Gen();
 		//		constants_.Bind(app->m_BasicShader, "Constants");
 		//		material_.Gen();
@@ -519,50 +519,55 @@ public:
 	virtual void OnDestroy() {}
 };
 
-#if 0
 class Hud : public TaskBase
 {
 public:
+	DrawBuffer <VertexPCT>m_vbFont;
 	virtual void OnTick(float deltaTime)
 	{
 	}
 	virtual void OnPostTick()
 	{
 	}
+	virtual void OnCreate()
+	{
+		m_vbFont.Init(ts->GetApp()->m_HUD.GetProgId(), 2048);
+	}
 	virtual void OnDraw()
 	{
+#if _FONT_H_
 		auto app = ts->GetApp();
 		std::vector<VertexPCT> verts;
 		app->m_font.RenderText(&verts, 0.0f, 0.0f, 1.0f, L"%d,%d,%016llx\n", app->m_Mouse.m_csrPos.x, app->m_Mouse.m_csrPos.y, *(uint64_t*)app->m_Mouse.m_CurrentMouseState.rgbButtons);
-		app->m_vbFont.UpdateData(verts);
 		auto loc = app->m_HUD.UpdateUniformu("u_tex",app->m_font.atlas_.TextureUnits());
-		app->m_vbFont.Bind();
 		app->m_font.atlas_.BindTexture();
-		glDrawArrays(GL_TRIANGLES, 0, app->m_vbFont.GetVertexCount());
+		app->m_vboFont.Begin(GL_TRIANGLES);
+		app->m_vboFont.Vertex(verts);
+		app->m_vboFont.End();
 
-		auto t = app->FindTaskByName("FBX");
+		auto t = app->FindTaskByName("MMD");
 		if (t.size() && t[0])
 		{
-			auto f = dynamic_cast<FBX*>(t[0]);
-//			app->m_font.RenderText(&verts, 0.0f, 48.0f, 0.5f, L"%.2f", f->fbx_.m_time);
+			auto m = dynamic_cast<MMD*>(t[0]);
+			app->m_font.RenderText(&verts, 0.0f, 48.0f, 0.5f, L"%.2f", m->mmd_.GetFrameTime());
 			auto view = app->m_Constants.Data().view;
 			auto viewInv = glm::inverse(view);
 			vec3 eye = viewInv[3].xyz;
  			app->m_font.RenderText(&verts, 0.0f, 48.0f, 0.5f, L"%S", glm::to_string(eye/30).c_str());
-			app->m_vbFont.UpdateData(verts);
-			app->m_vbFont.Bind();
-			glDrawArrays(GL_TRIANGLES, 0, app->m_vbFont.GetVertexCount());
+			app->m_vboFont.Begin(GL_TRIANGLES);
+			app->m_vboFont.Vertex(verts);
+			app->m_vboFont.End();
 		}
+#endif
 	}
 };
-#endif
 
 class TestTask
 {
 public:
 	inline static void Setup(TaskSystem* ts3d, TaskSystem* ts2d)
 	{
-//		ts2d->CreateTask<Hud>(nullptr, "Hud");
+		ts2d->CreateTask<Hud>(nullptr, "Hud");
 		ts3d->CreateTask<Camera>(nullptr, "Camera");
 		ts3d->CreateTask<Light>(nullptr, "Light");
 		ts3d->CreateTask<Field>(nullptr, "Field");

@@ -178,7 +178,7 @@ using glm::mat4;
 using glm::quat;
 #include <glm/gtx/scalar_relational.hpp> // glm::sum() を使用するために必要
 
-#if 0
+#if false	//VS2026アプデでfreetypeのリンクが通らなくなったため一時無効化
 // FreeType
 #include <ft2build.h>
 #include FT_FREETYPE_H

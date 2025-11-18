@@ -1,6 +1,6 @@
 ﻿#pragma once
-#if 0	//VS2026アプデでfreetypeのリンクが通らなくなったため一時無効化
 #include "framework.h"
+#if defined(FT_FREETYPE_H)	//VS2026アプデでfreetypeのリンクが通らなくなったため一時無効化
 #include "Vertex.h"
 //#include "VAO.h"
 //#include "Shader.h"
@@ -68,4 +68,6 @@ private:
 //		return rgb_ | (static_cast<uint32_t>(a) << 24);
 	}
 };
+
+#define _FONT_H_ true
 #endif

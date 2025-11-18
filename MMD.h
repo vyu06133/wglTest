@@ -110,7 +110,6 @@ namespace mmd {
 			matrixTemp(1.0f),
 			motions(),
 			motionOffsetPos(0.0f),
-			hasVertices(false),
 			isLeg(false),
 			isChain(false),
 			isPinnedChain(false),
@@ -130,6 +129,7 @@ namespace mmd {
 
 		glm::vec4 pos;      // w = 1
 		glm::quat rotation; // quaternion
+		glm::mat4 bindPose;
 
 		glm::mat4 matrix;
 		glm::mat4 matrixTemp; // temporal
@@ -138,7 +138,6 @@ namespace mmd {
 
 		glm::vec3 motionOffsetPos;
 
-		bool hasVertices;
 		bool isLeg;
 		bool isChain;
 		bool isPinnedChain;
@@ -223,7 +222,8 @@ namespace mmd {
 	public:
 		VMD() {};
 		~VMD() {};
-
+		float start_ = 0.0f;
+		float end_ = 0.0f;
 		std::vector<VMDMotion> motions_;
 		std::vector<VMDMorph> morphs_;
 #if USE_ANIMCURVE
@@ -290,13 +290,6 @@ namespace mmd {
 		void AttachAnimation(VMD* anim);
 		VMD* GetAnimation() const { return anim_; }
 
-		vec3 static_min = {};
-		vec3 static_max = {};
-		vec3 static_dim = {};
-		vec3 static_center = {};
-		vec3 dynamic_min = {};
-		vec3 dynamic_max = {};
-		vec3 dynamic_dim = {};
 		float* renderVertices = nullptr;
 		mat4 root_ = mat4(1.0f);;
 //		std::unordered_map<std::string, Texture2D*> textures_;
@@ -305,6 +298,8 @@ namespace mmd {
 		float* Prepare();
 		void Update(float delta);
 		void UpdateMorph();
+		uint32_t GetDeformMatrixCount() const;
+		void GetDeformMatrix(mat4* dst, size_t dstCount) const;
 
 		void IKSolve(IK* ik, float errToleranceSq);
 
@@ -323,6 +318,7 @@ namespace mmd {
 		MotionSegment FindMotionSegment(float frame, std::vector<Motion>& motions);
 		void InterpolateMotion(quat& rotation, vec3& position, std::vector<Motion>& motions, float frame);
 
+		float GetFrameTime() const;
 		float current_frame = 0.0f;
 		void VertexTransform();
 		uint32_t GetMaterialCount() const;

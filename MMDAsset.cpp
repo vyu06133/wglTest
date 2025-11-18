@@ -107,11 +107,11 @@ void MMDAsset::Update(float frameTime)
 	mScene->Update(frameTime);
 }
 
-//void MMDAsset::CalcBbox()
-//{
-//	ASSERT(mScene);
-//	mScene->CalcBbox();
-//}
+float MMDAsset::GetFrameTime() const
+{
+	ASSERT(mScene);
+	return mScene->GetFrameTime();
+}
 
 uint32_t MMDAsset::GetMaterialCount() const
 {
@@ -169,58 +169,6 @@ void MMDAsset::DrawMesh(uint32_t materialIdx, std::vector<VertexPNT>* vert)
 		mScene->DrawMesh(materialIdx, vert);
 	}
 	return;
-
-	// 無効なメッシュインデックスのチェック
-	if (materialIdx < GetMaterialCount())
-	{
-		return;
-	}
-
-	//const Mesh& currentMesh = meshes[_meshIndex];
-
-	//// マテリアルプロパティの設定
-	//// OpenGLのGL_AMBIENT_AND_DIFFUSEは、環境光と拡散光の両方に同じ色を使用します。
-	//glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glm::value_ptr(currentMesh.diffuseColor));
-	//glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, glm::value_ptr(currentMesh.specularColor));
-	//glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, currentMesh.specularity);
-	//glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, glm::value_ptr(glm::vec4(currentMesh.ambientColor, 1.0f))); // ambientColorはvec3なのでvec4に変換
-
-
-	// 頂点属性を有効化
-	//glEnableClientState(GL_VERTEX_ARRAY);
-	//glEnableClientState(GL_NORMAL_ARRAY);
-	//if (currentMesh.hasTexture)
-	//{
-	//	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	//}
-
-	// 頂点データへのポインタを設定
-	//glVertexPointer(3, GL_FLOAT, sizeof(Vertex), glm::value_ptr(vertices[0].position));
-	//glNormalPointer(GL_FLOAT, sizeof(Vertex), glm::value_ptr(vertices[0].normal));
-	//if (currentMesh.hasTexture)
-	//{
-	//	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), glm::value_ptr(vertices[0].uv));
-	//}
-
-	//int firstVertexIndex = 0;
-	//for (int i = 0; i < _meshIndex; ++i)
-	//{
-	//	firstVertexIndex += meshes[i].vertexNum;
-	//}
-
-	//// インデックスバッファを使用して描画
-	//glDrawElements(GL_TRIANGLES, currentMesh.vertexNum, GL_UNSIGNED_INT, &surfaces[firstVertexIndex].vertexIndex);
-
-	//// 頂点属性を無効化
-	//glDisableClientState(GL_VERTEX_ARRAY);
-	//glDisableClientState(GL_NORMAL_ARRAY);
-	//if (currentMesh.hasTexture)
-	//{
-	//	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	//}
-
-	// デバッグ出力
-	//TRACEA("MMDAsset::drawMeshがメッシュインデックス: %d (頂点数: %u) で呼び出されました。\n", _meshIndex, currentMesh.vertexNum);
 }
 
 // MMDAssetが保持するリソースをクリーンアップします。

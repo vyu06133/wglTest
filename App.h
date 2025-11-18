@@ -157,7 +157,8 @@ public:
 	Keyboard m_Keyboard;
 	Gamepad m_Gamepad;
 	Mouse m_Mouse;
-#if 0	//VS2026アプデでfreetypeのリンクが通らなくなったため一時無効化
+#if _FONT_H_
+	//VS2026アプデでfreetypeのリンクが通らなくなったため一時無効化
 	Font m_font;
 #endif
 
@@ -173,7 +174,7 @@ public:
 
 	//vertex bufer objects
 	DrawBuffer<VertexPCT> m_vboPCT;
-	DrawBuffer<VertexPCT> m_vbFont;
+	DrawBuffer<VertexPCT> m_vboFont;
 	Texture2D m_tex;
 	std::vector<VertexPCT> vertices_;
 

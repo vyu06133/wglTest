@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
-#if 0	//VS2026アプデでfreetypeのリンクが通らなくなったため一時無効化
 #include "font.h"
+#if _FONT_H_	//VS2026アプデでfreetypeのリンクが通らなくなったため一時無効化
 #include "MyUtil.h"
 #include "MyMath.h"
 #include "binpacker.h"

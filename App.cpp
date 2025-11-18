@@ -334,18 +334,17 @@ bool App::InitWGL(HDC hDC)
 	ts3d_.SetApp(this);
 	TestTask::Setup(&ts3d_, &ts2d_);
 
-#if 0	//VS2026アプデでfreetypeのリンクが通らなくなったため一時無効化
+#if _FONT_H_
 #if MAKE_FONT_ATLAS
 	font_.Init("assets\\font\\みかちゃん.ttf", 0, 32);
 #else
 	m_font.Init("Assets\\font\\みかちゃん.png", "Assets\\font\\みかちゃん.fontmap", 24);
 #endif
 #endif
-	m_tex.SetActiveTexture(GL_TEXTURE0);
-	m_tex.LoadFile("assets\\image\\仕事猫猫.png");
-	m_tex.BindTexture();
+//	m_tex.SetActiveTexture(GL_TEXTURE0);
+//	m_tex.LoadFile("assets\\image\\仕事猫猫.png");
+//	m_tex.BindTexture();
 
-//	m_vbFont.Setup(nullptr, 120*6, GL_DYNAMIC_DRAW);
 	vertices_.push_back(VertexPCT(0.0f, 500.0f, 0.0f,	1,0,1,1, 0.0f, 1.0f)); // 左下
 	vertices_.push_back(VertexPCT(800.0f, 500.0f, 0.0f,	0,1,1,1, 1.0f, 1.0f));  // 右下
 	vertices_.push_back(VertexPCT(0.0f, 0.0f, 0.0f,		1,1,0,1, 0.0f, 0.0f));   // 上
@@ -353,7 +352,6 @@ bool App::InitWGL(HDC hDC)
 	vertices_.push_back(VertexPCT(800.0f, 500.0f, 0.0f,	1,1,0,1, 1.0f, 1.0f));   // 上
 	vertices_.push_back(VertexPCT(800.0f, 0.0f, 0.0f,	0,1,1,1, 1.0f, 0.0f));  // 右下
 	vertices_.push_back(VertexPCT(0.0f, 0.0f, 0.0f,		1,0,1,1, 0.0f, 0.0f)); // 左下
-//	m_vboPCT.Setup(vertices_, GL_STATIC_DRAW);
 
 	m_Constants.Data().SetWVP(
 		glm::mat4(1.0f), // モデル行列 (単位行列)
@@ -399,7 +397,7 @@ void App::TickFunc(float delta)
 	m_LightInfo.Data().Clear();
 	ts3d_.Tick(delta);
 	ts2d_.Tick(delta);
-#if 0
+#if _FONT_H_
 #if MAKE_FONT_ATLAS
 	static wchar_t ch = 0;
 	for(auto i=0;i<90;i++)	font_.GetCh(ch++);
@@ -427,47 +425,43 @@ void App::DrawFunc(float delta)
 	ts3d_.Draw();
 	HUDSetup();
 	ts2d_.Draw();
-#if 0
-	proj_ = glm::ortho(-1.0f, 10.0f, -1.0f, 10.0f, 0.1f, 100.0f); // 正射影行列　こっちじゃないと三角形がでない
-	proj_ = glm::orthoRH(0.0f, clientSize_.x, clientSize_.y, 0.0f, 0.1f, 32767.0f);
-	mvp_ = proj_ * view_ * model_;
-	GLuint mvpLoc = m_shaderProg.FindUniformLoc("u_mvp");
-//	glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp_));
-	auto loc = m_shaderProg.FindUniformLoc("u_tex");
-//	glUniform1i(loc, font_.atlas_.TextureUnits());
-	m_vboPCT.Bind();
-	font_.atlas_.BindTexture();
-#if 0
+#if 1//HUD
+	auto proj_ = glm::orthoRH(0.0f, clientSize_.x, clientSize_.y, 0.0f, 0.1f, 32767.0f);
+	auto mvp_ = proj_ * mat4(1.0f) * mat4(1.0f);
+	GLuint mvpLoc = m_HUD.FindUniformLoc("u_mvp");
+#if _FONT_H_
+	glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp_));
+	m_font.atlas_.BindTexture();
+
 	glDepthMask(GL_FALSE); // 深度バッファへの書き込みだけ無効
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	m_shaderProg.UpdateUniformvec4("u_fontColor", vec4(1.0f,1.0f,1.0f,1.0f));
+	m_HUD.UpdateUniformvec4("u_fontColor", vec4(1.0f,1.0f,1.0f,1.0f));
 	proj_ = glm::orthoRH(0.0f, clientSize_.x, clientSize_.y, 0.0f, 0.1f, 32767.0f);
-	mvp_ = proj_ * view_ * model_;
+	mvp_ = proj_ * mat4(1.0f) * mat4(1.0f);
 	glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp_));
 	std::vector<VertexPCT> verts;
 	wchar_t text[30];
 	swprintf_s(text, _countof(text), L"%d,%d\n", m_Mouse.m_csrPos.x, m_Mouse.m_csrPos.y);// , * (uint64_t*)m_Mouse.m_CurrentMouseState.rgbButtons);
-	font_.RenderText(&verts, 0.0f, 500.0f, 1.0f, text);
-	m_vbFont.UpdateData(verts);
-	font_.atlas_.SetParameter(GL_CLAMP, GL_LINEAR);
-	font_.atlas_.BindTexture();
-	loc = m_shaderProg.FindUniformLoc("u_tex");
-	glUniform1i(loc, font_.atlas_.TextureUnits());
-	m_vbFont.Bind();
+	m_font.RenderText(&verts, 0.0f, 500.0f, 1.0f, text);
+	m_font.atlas_.SetParameter(GL_CLAMP, GL_LINEAR);
+	m_font.atlas_.BindTexture();
+	auto loc = m_HUD.FindUniformLoc("u_tex");
+	glUniform1i(loc, m_font.atlas_.TextureUnits());
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
-	glDrawArrays(GL_TRIANGLES, 0, m_vbFont.GetVertexCount());
-#endif
+	m_vboFont.Begin(GL_TRIANGLES);
+	m_vboFont.Vertex(verts);
+	m_vboFont.End();
 	HUDSetup();
-	std::vector<VertexPCT> verts;
-	font_.RenderText(&verts, 0.0f, 0.0f, 1.0f, L"%d,%d\n", m_Mouse.m_csrPos.x, m_Mouse.m_csrPos.y);
-	m_vbFont.UpdateData(verts);
+	m_font.RenderText(&verts, 0.0f, 0.0f, 1.0f, L"%d,%d\n", m_Mouse.m_csrPos.x, m_Mouse.m_csrPos.y);
 	loc = m_HUD.FindUniformLoc("u_tex");
-	glUniform1i(loc, font_.atlas_.TextureUnits());
-	m_vbFont.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, m_vbFont.GetVertexCount());
+	glUniform1i(loc, m_font.atlas_.TextureUnits());
+	m_vboFont.Begin(GL_TRIANGLES);
+	m_vboFont.Vertex(verts);
+	m_vboFont.End();
+#endif
 #endif
 	Present(nullptr);
 }
@@ -484,7 +478,8 @@ void App::HUDSetup()
 		m_HUD.LinkProg();
 	}
 	m_HUD.UseProg();
-#if 0	//VS2026アプデでfreetypeのリンクが通らなくなったため一時無効化
+#if _FONT_H_	//VS2026アプデでfreetypeのリンクが通らなくなったため一時無効化
+	m_vboFont.Init(m_HUD);
 	auto u_tex = m_font.atlas_.TextureUnits();
 	m_HUD.UpdateUniformu("u_tex", u_tex);
 #endif

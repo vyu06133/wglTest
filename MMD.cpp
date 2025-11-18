@@ -377,6 +377,11 @@ mmd::PMD* mmd::PMDReader::LoadFromStream(std::istream& is)
 			bone.pos[2] = pmdBones[i].bone_pos[2];
 			bone.pos[3] = 1.0f;
 
+			bone.bindPose = glm::mat4(1.0f);
+			bone.bindPose[3].x = -pmdBones[i].bone_pos[0];
+			bone.bindPose[3].y = -pmdBones[i].bone_pos[1];
+			bone.bindPose[3].z = -pmdBones[i].bone_pos[2];
+
 			char buf[21];
 			memcpy(buf, pmdBones[i].bone_name, 20);
 			buf[20] = '\0'; // add '\0' for safety
@@ -652,12 +657,13 @@ void mmd::MMDScene::ClearUpdateFlags(std::vector<mmd::Bone>& bones)
 	}
 }
 
+#if 0
 void mmd::MMDScene::IKSolve(IK* ik, float errToleranceSq)
 {
 	//
 	// Solve IK with CCD algorithm.
 	//
-
+	ASSERT(ik);
 	Bone& effector = model_->bones_.at(ik->boneIndex);
 	Bone& target = model_->bones_.at(ik->targetBoneIndex);
 
@@ -695,7 +701,7 @@ void mmd::MMDScene::IKSolve(IK* ik, float errToleranceSq)
 					float c = (el * el - bl * bl - tl * tl) / (2.0f * bl * tl);
 					if (c < -1.0f)	c = -1.0f;
 					if (c > 1.0f)	c = 1.0f;
-					float angle = acos(c);
+					float angle = MyMath::ArcCos(c);
 
 					vec3 axis = vec3(-1.0f, 0.0f, 0.0f);
 
@@ -767,6 +773,121 @@ void mmd::MMDScene::IKSolve(IK* ik, float errToleranceSq)
 
 	ClearUpdateFlags(model_->bones_);
 }
+#else
+void mmd::MMDScene::IKSolve(IK* ik, float errToleranceSq)
+{
+	//
+	// Solve IK with CCD algorithm.
+	//
+	ASSERT(ik);
+	Bone& effector = model_->bones_.at(ik->boneIndex);
+	Bone& target = model_->bones_.at(ik->targetBoneIndex);
+
+	vec3 localTargetPos = vec3(0.0f);
+	vec3 localEffectorPos = vec3(0.0f);
+
+	vec3 effectorPos;
+	GetCurrentBonePosition(effectorPos, effector, model_);
+
+	for (int i = 0; i < ik->iterations; i++)
+	{
+		for (int j = 0; j < ik->chainLength; j++)
+		{
+			Bone& bone = model_->bones_.at(ik->childBoneIndices[j]);
+
+			ClearUpdateFlags(ik->childBoneIndices[j], ik->targetBoneIndex, model_);
+
+			vec3 targetPos;
+			GetCurrentBonePosition(targetPos, target, model_);
+
+			if (bone.isLeg)
+			{
+				if (i == 0)
+				{
+					Bone& base = model_->bones_.at(ik->childBoneIndices[ik->chainLength - 1]);
+					GetCurrentBonePosition(localTargetPos, bone, model_);
+					GetCurrentBonePosition(localEffectorPos, base, model_);
+
+					vec3 effectorVec = effectorPos - localEffectorPos;
+					vec3 boneVec = localTargetPos - localEffectorPos;
+					vec3 targetVec = targetPos - localTargetPos;
+					float el = glm::length(effectorVec);
+					float bl = glm::length(boneVec);
+					float tl = glm::length(targetVec);
+					float c = (el * el - bl * bl - tl * tl) / (2.0f * bl * tl);
+					if (c < -1.0f)	c = -1.0f;
+					if (c > 1.0f)	c = 1.0f;
+					float angle = MyMath::ArcCos(c);
+
+					vec3 axis = vec3(-1.0f, 0.0f, 0.0f);
+
+					quat qa = glm::angleAxis(angle, axis);
+					bone.rotation = glm::normalize(bone.rotation * qa);
+
+					// Preserve translation
+					glm::mat3 m = glm::toMat3(bone.rotation);
+					bone.matrixTemp[0] = vec4(m[0], 0.0f);
+					bone.matrixTemp[1] = vec4(m[1], 0.0f);
+					bone.matrixTemp[2] = vec4(m[2], 0.0f);
+				}
+			}
+			else
+			{
+				vec3 d = effectorPos - targetPos;
+				float diffSq = glm::length(d);
+				if (diffSq < errToleranceSq)
+				{
+					// converged.
+					ClearUpdateFlags(model_->bones_);
+					return;
+				}
+
+				// world -> local
+				mat4 invM;
+				GetCurrentBoneMatrix(invM, bone, model_);
+				invM = glm::inverse(invM);
+
+				localEffectorPos = glm::vec3(invM * glm::vec4(effectorPos, 1.0f));
+				localTargetPos = glm::vec3(invM * glm::vec4(targetPos, 1.0f));
+
+				// basis -> effector
+				vec3 basis2Effector = localEffectorPos;
+				basis2Effector = glm::normalize(basis2Effector);
+
+				// basis -> target
+				vec3 basis2Target = localTargetPos;
+				basis2Target = glm::normalize(basis2Target);
+
+				// Calculate shortest rotation angle.
+				float rotationDotProduct = glm::dot(basis2Effector, basis2Target);
+
+				if (rotationDotProduct < -1.0f)	rotationDotProduct = -1.0f;
+				if (rotationDotProduct > 1.0f)	rotationDotProduct = 1.0f;
+
+				float rotationAngle = MyMath::ArcCos(rotationDotProduct);
+				rotationAngle *= ik->weight;
+				if (rotationAngle > 1.0e-5f)
+				{
+					vec3 rotationAxis;
+					rotationAxis = glm::cross(basis2Target, basis2Effector);
+					rotationAxis = glm::normalize(rotationAxis);
+
+					quat q0 = glm::angleAxis(rotationAngle, rotationAxis);
+					bone.rotation = glm::normalize(bone.rotation * q0);
+
+					// Preserve translation
+					glm::mat3 m = glm::toMat4(bone.rotation);
+					bone.matrixTemp[0] = vec4(m[0], 0.0f);
+					bone.matrixTemp[1] = vec4(m[1], 0.0f);
+					bone.matrixTemp[2] = vec4(m[2], 0.0f);
+				}
+			}
+		}
+	}
+
+	ClearUpdateFlags(model_->bones_);
+}
+#endif
 
 #pragma endregion
 
@@ -829,6 +950,16 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 					return m1.frame_no < m2.frame_no;
 				}
 			);
+
+			anim->start_ = FLT_MAX;
+			anim->end_ = -FLT_MAX;
+			for (auto& m : anim->motions_)
+			{
+				anim->start_ = std::min(anim->start_, (float)m.frame_no);
+				anim->end_ = std::max(anim->end_, (float)m.frame_no);
+			}
+			TRACE("start=%f\n", anim->start_);
+			TRACE("end=%f\n", anim->end_);
 		}
 
 #if USE_ANIMCURVE
@@ -887,8 +1018,8 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 			auto& posCurve = anim->Vec3Curves_[key];
 			for (auto& m : mv)
 			{
-				rotCurve.Insert(m.frame_no, glm::make_quat(m.rotation));
-				posCurve.Insert(m.frame_no, glm::make_vec3(m.location));
+				rotCurve.Insert((float)m.frame_no, glm::make_quat(m.rotation));
+				posCurve.Insert((float)m.frame_no, glm::make_vec3(m.location));
 			}
 		}
 #endif
@@ -1117,8 +1248,12 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 
 	void mmd::MMDScene::Update(float delta)
 	{
-		current_frame += delta;
 		if(!model_||!anim_)return;
+		current_frame += delta * 3.0f;//test:処理落ちが対応できてない
+		if (anim_ && current_frame > anim_->end_)
+		{
+			current_frame = anim_->start_;
+		}
 //		TRACE("deformBuffer.size() = %zu\n",deformBuffer.size());
 //		TRACE("morphBuffer.size()=%zu\n", morphBuffer.size());
 		if(deformBuffer.size() != morphBuffer.size())return;
@@ -1145,6 +1280,7 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 		}
 
 		//UpdateIK
+#if 1
 		{
 			for (int i = 0; i < model_->iks_.size(); i++)
 			{
@@ -1152,6 +1288,7 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 				IKSolve(&ik, 0.01f);
 			}
 		}
+#endif
 
 		// Clear update flag
 		for (int i = 0; i < model_->bones_.size(); i++)
@@ -1180,7 +1317,6 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 		{
 			auto weight = morphCurve.second.GetCurrentValue();
 
-//			if (morphCurve.first == "ウィンク")
 			{
 					if (GetAsyncKeyState(VK_RSHIFT) < 0)
 					{
@@ -1203,6 +1339,29 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 					}
 				}
 			}
+		}
+	}
+
+	uint32_t mmd::MMDScene::GetDeformMatrixCount() const
+	{
+		if (!model_)
+		{
+			ASSERT(0);
+			return 0;
+		}
+		return (uint32_t)model_->bones_.size();
+	}
+
+	void mmd::MMDScene::GetDeformMatrix(mat4* dst, size_t dstCount) const
+	{
+		if (!model_||!dst||dstCount< GetDeformMatrixCount())
+		{
+			ASSERT(0);
+			return;
+		}
+		for (auto i = 0u; i < dstCount; i++)
+		{
+			dst[i] = model_->bones_[i].matrix * model_->bones_[i].bindPose;
 		}
 	}
 
@@ -1276,8 +1435,14 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 		}
 	}
 
+	float mmd::MMDScene::GetFrameTime() const
+	{
+		return (float)current_frame;
+	}
+
 	void mmd::MMDScene::VertexTransform()
 	{
+//return;
 		for (auto i = 0u; i < model_->vertices_.size(); i++)
 		{
 			PMDVertex& pv = model_->vertices_[i];
@@ -1290,13 +1455,20 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 			mat4& m0 = model_->bones_[b0].matrix;
 			mat4& m1 = model_->bones_[b1].matrix;
 
+#if 0
 			// ボーン行列は絶対座標で定義されています。
 			// （モデルの）相対座標にある頂点を、そのボーン行列に渡します。
-			p0 -= model_->bones_[b0].pos.xyz();
-			p1 -= model_->bones_[b1].pos.xyz();
+			//p0 -= model_->bones_[b0].pos.xyz();
+			//p1 -= model_->bones_[b1].pos.xyz();
+			vec3 v0(glm::vec3(m0 * glm::vec4(p0 - model_->bones_[b0].pos.xyz(), 1.0f)));
+			vec3 v1(glm::vec3(m1 * glm::vec4(p1 - model_->bones_[b1].pos.xyz(), 1.0f)));
+#else
+			mat4& bind0 = model_->bones_[b0].bindPose;
+			mat4& bind1 = model_->bones_[b1].bindPose;
+			vec3 v0(glm::vec3(m0 * bind0 * glm::vec4(morphBuffer[i], 1.0f)));
+			vec3 v1(glm::vec3(m1 * bind1 * glm::vec4(morphBuffer[i], 1.0f)));
+#endif
 
-			vec3 v0(glm::vec3(m0 * glm::vec4(p0, 1.0f)));
-			vec3 v1(glm::vec3(m1 * glm::vec4(p1, 1.0f)));
 			float w(pv.weight / 100.0f);
 
 			vec3 v = w * v0 + (1.0f - w) * v1;
@@ -1304,6 +1476,7 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 			deformBuffer[i] = v;
 		}
 
+#if 0
 		// calculate dynamic scene bbox
 		dynamic_min.x = FLT_MAX;
 		dynamic_min.y = FLT_MAX;
@@ -1322,6 +1495,7 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 			dynamic_max.z = std::max(dynamic_max.z, p.z);
 		}
 		dynamic_dim = dynamic_max - dynamic_min;
+#endif
 	}
 
 	uint32_t mmd::MMDScene::GetMaterialCount() const
@@ -1357,16 +1531,6 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 
 	void mmd::MMDScene::DrawMesh(uint32_t materialIdx, std::vector<VertexPNT>* vert)
 	{
-		const float collist[7][3] =
-		{
-			{1.0, 0.0, 0.0},
-			{0.0, 1.0, 0.0},
-			{0.0, 0.0, 1.0},
-			{1.0, 1.0, 0.0},
-			{1.0, 0.0, 1.0},
-			{0.0, 1.0, 1.0},
-			{1.0, 1.0, 1.0},
-		};
 		//glDisable(GL_LIGHTING);
 		//glDisable(GL_DEPTH_TEST);
 		//glCullFace(GL_BACK);
@@ -1535,13 +1699,13 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 		//glDisable(GL_DEPTH_TEST);
 		const vec4 collist[7] =
 		{
-			{1.0f, 0.0f, 0.0f, 1.0f},
-			{0.0f, 1.0f, 0.0f, 1.0f},
-			{0.0f, 0.0f, 1.0f, 1.0f},
-			{1.0f, 1.0f, 0.0f, 1.0f},
-			{1.0f, 0.0f, 1.0f, 1.0f},
-			{0.0f, 1.0f, 1.0f, 1.0f},
-			{1.0f, 1.0f, 1.0f, 1.0f},
+			{1.0f, 0.0f, 0.0f, 0.25f},
+			{0.0f, 1.0f, 0.0f, 0.25f},
+			{0.0f, 0.0f, 1.0f, 0.25f},
+			{1.0f, 1.0f, 0.0f, 0.25f},
+			{1.0f, 0.0f, 1.0f, 0.25f},
+			{0.0f, 1.0f, 1.0f, 0.25f},
+			{1.0f, 1.0f, 1.0f, 0.25f},
 		};
 		pc->clear();
 
@@ -1612,8 +1776,7 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 			// if parent bone is seed bone, current bone must be excluded from physics simulation
 			model_->bones_[k].isPinnedChain =
 				(model_->bones_[k].isChain && (!model_->bones_[model_->bones_[k].parentIndex].tailIndex ||
-					&model_->bones_[model_->bones_[k].parentIndex] == seed_bone //||
-					/*!model->bones_[k].hasVertices*/));
+					&model_->bones_[model_->bones_[k].parentIndex] == seed_bone));
 
 		}
 	}
@@ -1627,56 +1790,24 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 			auto& b = model_->bones_[i];
 			b.min = vec3(FLT_MAX);
 			b.max = vec3(-FLT_MAX);
-			b.hasVertices = false;
 		}
 		for (int j = 0; j < model_->vertices_.size(); j++)
 		{
 			PMDVertex& pv = model_->vertices_[j];
-			vec3 p0;
-			p0.x = pv.pos[0];
-			p0.y = pv.pos[1];
-			p0.z = pv.pos[2];
+			vec3 p0 = glm::make_vec3(pv.pos);
 			unsigned short b0 = pv.bone[0];
-			model_->bones_[b0].min.x = std::min(model_->bones_[b0].min.x, p0.x);
-			model_->bones_[b0].min.y = std::min(model_->bones_[b0].min.y, p0.y);
-			model_->bones_[b0].min.z = std::min(model_->bones_[b0].min.z, p0.z);
-			model_->bones_[b0].max.x = std::max(model_->bones_[b0].max.x, p0.x);
-			model_->bones_[b0].max.y = std::max(model_->bones_[b0].max.y, p0.y);
-			model_->bones_[b0].max.z = std::max(model_->bones_[b0].max.z, p0.z);
-			model_->bones_[b0].hasVertices = true;
+			model_->bones_[b0].min = glm::min(model_->bones_[b0].min, p0);
+			model_->bones_[b0].max = glm::max(model_->bones_[b0].max, p0);
 		}
 
-		// calculate static scene bbox
-		this->static_min.x = FLT_MAX;
-		this->static_min.y = FLT_MAX;
-		this->static_min.z = FLT_MAX;
-		this->static_max.x = -FLT_MAX;
-		this->static_max.y = -FLT_MAX;
-		this->static_max.z = -FLT_MAX;
 		for (int k = 0; k < model_->bones_.size(); k++)
 		{
 			model_->bones_[k].dim = model_->bones_[k].max - model_->bones_[k].min;
 
-			this->static_min.x = std::min(this->static_min.x, model_->bones_[k].min.x);
-			this->static_min.y = std::min(this->static_min.y, model_->bones_[k].min.y);
-			this->static_min.z = std::min(this->static_min.z, model_->bones_[k].min.z);
-			this->static_max.x = std::max(this->static_max.x, model_->bones_[k].max.x);
-			this->static_max.y = std::max(this->static_max.y, model_->bones_[k].max.y);
-			this->static_max.z = std::max(this->static_max.z, model_->bones_[k].max.z);
+			vec3 axis = model_->bones_[k].pos.xyz();
 
-			vec3 axis;
-			axis.x = model_->bones_[k].pos[0];
-			axis.y = model_->bones_[k].pos[1];
-			axis.z = model_->bones_[k].pos[2];
-
-			// Bone matrix is defined in absolute coordinates.
-			// Pass vertex static_min/static_max in relative coordinate to bone matrix.
-			model_->bones_[k].max = model_->bones_[k].max - axis;
-			model_->bones_[k].min = model_->bones_[k].min - axis;
+			model_->bones_[k].max -= axis;
+			model_->bones_[k].min -= axis;
 		}
-		this->static_dim = this->static_max - this->static_min;
-		this->static_center.x = (this->static_min.x + this->static_max.x) * 0.5f;
-		this->static_center.y = (this->static_min.y + this->static_max.y) * 0.5f;
-		this->static_center.z = (this->static_min.z + this->static_max.z) * 0.5f;
 	}
 	
