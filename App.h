@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "framework.h"
 #include "App.h"
-#include "Clock.h"
 #include "Shader.h"
 #include "Vertex.h"
 #include "Texture2D.h"
@@ -74,8 +73,6 @@ public:
 			result.push_back(t);
 		return result;
 	}
-	Clock tickClock;
-	Clock drawClock;
 
 	//uniform block objects
 	struct alignas(16) Material

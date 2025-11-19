@@ -97,6 +97,11 @@ void mmd::MMDScene::AttachAnimation(VMD* anim)
 	anim_ = anim; // save for a reference.
 }
 
+void mmd::MMDScene::SetRootTransform(const mat4& m)
+{
+	root_ = m;
+}
+
 void mmd::MMDScene::UpdateBone(float frame, float step)
 {
 	//printf("UpdateBone()\n");
@@ -1170,7 +1175,6 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 		assert(model_);
 		morphBuffer.resize(model_->GetVerticesCount());
 		deformBuffer.resize(model_->GetVerticesCount());
-		//root_[3].x = 20.0f;
 		CalcBbox();
 		return renderVertices;
 	}
@@ -1249,20 +1253,19 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 	void mmd::MMDScene::Update(float delta)
 	{
 		if(!model_||!anim_)return;
-		current_frame += delta * 3.0f;//test:処理落ちが対応できてない
-		if (anim_ && current_frame > anim_->end_)
+		m_currentFrame += delta * m_FPS;
+		printf("\r%f", m_currentFrame);
+		if (anim_ && m_currentFrame > anim_->end_)
 		{
-			current_frame = anim_->start_;
+			m_currentFrame = anim_->start_;
 		}
-//		TRACE("deformBuffer.size() = %zu\n",deformBuffer.size());
-//		TRACE("morphBuffer.size()=%zu\n", morphBuffer.size());
 		if(deformBuffer.size() != morphBuffer.size())return;
-//		TRACE("vertices_.size() = %zu\n", model_->vertices_.size());
 		if(deformBuffer.size() != model_->vertices_.size())return;
+		
 		//morph
 		for (auto& morphCurve : anim_->MorphCurves_)
 		{
-			morphCurve.second.Evaluate(current_frame);
+			morphCurve.second.Evaluate(m_currentFrame);
 		}
 		UpdateMorph();
 
@@ -1275,7 +1278,7 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 				assert(b.parentIndex < i);
 			}
 
-			SetBoneMatrix(i, b, current_frame);
+			SetBoneMatrix(i, b, m_currentFrame);
 			b.updated = false;
 		}
 
@@ -1437,7 +1440,7 @@ mmd::VMD* mmd::VMDReader::LoadFromStream(std::istream& is)
 
 	float mmd::MMDScene::GetFrameTime() const
 	{
-		return (float)current_frame;
+		return (float)m_currentFrame;
 	}
 
 	void mmd::MMDScene::VertexTransform()

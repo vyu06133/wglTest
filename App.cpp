@@ -60,6 +60,14 @@ int APIENTRY App::wWinMain(_In_ HINSTANCE hInstance,
 
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WGLTEST));
 
+	// high_resolution_clock を使用して、高精度な時間計測を行う
+	using Clock = std::chrono::high_resolution_clock;
+	using TimePoint = std::chrono::time_point<Clock>;
+	using Duration = std::chrono::duration<float>; // float型で時間を扱う（秒単位）
+
+	// 1. ループ開始前の時刻を取得（前回の時刻として初期化）
+	TimePoint lastTime = Clock::now();
+
 	// メイン メッセージ ループ:
 	MSG msg = {};
 	while (WM_QUIT != msg.message)
@@ -71,13 +79,20 @@ int APIENTRY App::wWinMain(_In_ HINSTANCE hInstance,
 		}
 		else
 		{
+			// 2. 現在の時刻を取得
+			TimePoint nowTime = Clock::now();
+
+			// 3. 2つの時刻の差を計算し、Duration<float>（秒単位のfloat）に変換
+			Duration elapsedDuration = nowTime - lastTime;
+			float deltaTime = elapsedDuration.count(); // 秒単位のfloat値を取得
+//printf("\r%f", deltaTime);
+
 //			IdleFunc();
-			TickFunc(1.0f/30.0f);
-	//		TickFunc(tickClock.GetDelta());
-			tickClock.Period();
-			DrawFunc(1.0f/30.0f);
-	//		DrawFunc(drawClock.GetDelta());
-			drawClock.Period();
+			TickFunc(deltaTime);
+			DrawFunc(deltaTime);
+
+			// 5. 現在時刻を次のループのために保存
+			lastTime = nowTime;
 		}
 	}
 	TermWGL();

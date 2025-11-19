@@ -169,7 +169,6 @@ git update-index --skip-worktree Revision.inc</Command>
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="binpacker.h" />
-    <ClInclude Include="Clock.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="DrawBuffer.h" />
     <ClInclude Include="FBXAsset.h" />

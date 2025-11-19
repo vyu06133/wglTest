@@ -291,7 +291,8 @@ namespace mmd {
 		VMD* GetAnimation() const { return anim_; }
 
 		float* renderVertices = nullptr;
-		mat4 root_ = mat4(1.0f);;
+		void SetRootTransform(const mat4& m);
+		mat4 root_ = mat4(1.0f);
 //		std::unordered_map<std::string, Texture2D*> textures_;
 		std::vector<vec3> deformBuffer;
 		std::vector<vec3> morphBuffer;
@@ -319,7 +320,8 @@ namespace mmd {
 		void InterpolateMotion(quat& rotation, vec3& position, std::vector<Motion>& motions, float frame);
 
 		float GetFrameTime() const;
-		float current_frame = 0.0f;
+		float m_currentFrame = 0.0f;
+		float m_FPS = 30.0f;
 		void VertexTransform();
 		uint32_t GetMaterialCount() const;
 		PMDMaterial& GetMaterial(uint32_t materialIdx) const;

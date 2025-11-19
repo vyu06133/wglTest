@@ -408,7 +408,8 @@ public:
 		auto app = ts->GetApp();
 		auto& kb = app->m_Keyboard;
 
-		mmd_.Update(deltaTime * 30.0f);
+		///mmd_.Update(deltaTime * 30.0f);
+		mmd_.Update(deltaTime);
 		//mmd_.CalcBbox();
 	}
 	virtual void OnDraw()

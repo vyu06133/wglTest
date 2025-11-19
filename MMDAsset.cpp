@@ -98,6 +98,14 @@ void MMDAsset::Term()
 	}
 }
 
+void MMDAsset::SetRootTransform(const mat4& m)
+{
+	if(mScene)
+	{
+		mScene->SetRootTransform(m);
+	}
+}
+
 // 指定されたフレーム時間に基づいてモデルのアニメーションを更新します。
 // この関数はボーンの位置と回転を補間し、モデルの現在のポーズを設定します。
 // frameTime: 現在のフレーム時間。

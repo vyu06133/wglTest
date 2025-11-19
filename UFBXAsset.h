@@ -246,8 +246,6 @@ public:
 		std::vector<VertexPNCTAW> vbuf_;
 		std::vector<VertexPNCTA> deform_;
 		std::vector<uint16_t> ibuf_;
-//		std::vector<uint16_t> mbuf_;
-//		std::vector<uint32_t> matSlots_;
 	};
 	std::vector<MeshInfo*> m_meshes;
 	using AnimCurveFloat = MyMath::AnimCurve<float>;
@@ -394,14 +392,12 @@ public:
 	void GetDeformMatrix(const MeshInfo* mesh, mat4* dst, size_t dstCount) const;
 	void GetSkeleton(std::vector<VertexPC>* primitive);
 	void GetVBuf(uint32_t mesh, uint32_t material, std::vector<VertexPNCTAW>* vbuf) const;
-//	void GetIBuf(uint32_t mesh, std::vector<uint16_t>* ibuf) const;
 	void Render();
 	uint32_t GetMeshCount() const;
 	uint32_t GetBoneCount(uint32_t mesh) const;
 	MeshInfo* GetMeshInfo(uint32_t mesh) const;
 
 	uint32_t GetMaterialGroupCount(uint32_t mesh) const;
-//	MaterialInfo* GetMaterial(uint32_t mesh, uint32_t material) const;
 	MaterialInfo* GetMaterialInfo(uint32_t info) const;
 	Geometry* GetMaterialGeometry(uint32_t mesh, uint32_t group) const;
 
@@ -435,7 +431,4 @@ public:
 	void UpdateWorldTransforms();
 	mat4 CalcLocalTransform(NodeTree::Item* item);
 	mat4 CalcWorldTransform(NodeTree::Item* item);
-
-
-	
 };

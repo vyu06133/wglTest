@@ -41,6 +41,7 @@ public:
 	
 	void Prepare();
 
+	void SetRootTransform(const mat4& m);
 	void Update(float frameTime);
 	float GetFrameTime() const;
 
