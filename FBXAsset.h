@@ -98,6 +98,7 @@ public:
 			//glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, glm::value_ptr(emmisive));
 		}
 	};
+	std::vector<MaterialInfo*> m_materials;
 
 	struct ClusterInfo
 	{
@@ -139,35 +140,66 @@ public:
 		fbxsdk::FbxSkin* skin =nullptr;
 		std::vector<ClusterInfo> clusters;
 	};
+	struct Geometry
+	{
+		Geometry() = default;
+		Geometry(int32_t mat) : material(mat) {};
+		int32_t material = 0;
+		uint32_t pointsCount = 0;
+		std::vector<VertexPNCTAW> vbuf_;
+		std::vector<VertexPNCT> deform_;
+		std::vector<uint16_t> ibuf_;
+	};
 	struct MeshInfo
 	{
 		MeshInfo() = default;
 		~MeshInfo()
 		{
-			for (auto& m : materials_)
-			{
-				if (m)
-				{
-					delete m;
-					m = nullptr;
-				}
-			}
+			//for (auto& m : materials_)
+			//{
+			//	if (m)
+			//	{
+			//		delete m;
+			//		m = nullptr;
+			//	}
+			//}
 		}
 		std::string name;
 		fbxsdk::FbxNode* node = nullptr;
 		fbxsdk::FbxMesh* mesh = nullptr;
 		SkinInfo skin;
 		mat4 GeometryOffset;
+		std::vector<Geometry> MaterialGroup;
 		uint32_t pointsCount = 0;
 		uint32_t faceCount = 0;
 		std::vector<VertexPNCTAW> cp_;
 		std::vector<VertexPNCTAW> vbuf_;
 		std::vector<VertexPNCT> deform_;
 		std::vector<uint16_t> ibuf_;
-		std::vector<uint32_t> MaterialIndex_;
-		std::vector<MaterialInfo*> materials_;
+	std::vector<uint32_t> MaterialIndex_;
+	std::vector<MaterialInfo*> materials_;
 	};
 	std::vector<MeshInfo*> m_meshes;
+	Geometry* GetMaterialGeometry(uint32_t mesh, uint32_t group) const
+	{
+		return &m_meshes[mesh]->MaterialGroup[group];
+	}
+	uint32_t GetMaterialGroupCount(uint32_t mesh) const
+	{
+		
+		return (uint32_t)m_meshes[mesh]->MaterialGroup.size();
+	}
+	uint32_t GetMaterialCount(uint32_t mesh) const;
+//	uint32_t GetMaterialCount(uint32_t mesh) const
+//	{
+//		UNREFERENCED_PARAMETER(mesh);
+//		return (uint32_t)m_materials.size();
+//	}
+	MaterialInfo* GetMaterialInfo(uint32_t mesh, uint32_t info) const
+	{
+		UNREFERENCED_PARAMETER(mesh);
+		return m_materials[info];
+	}
 
 	struct NodeInfo
 	{
@@ -326,10 +358,14 @@ public:
 	void Update(float delta);
 	void Render();
 	uint32_t GetMeshCount() const;
+	auto GetMeshInfo(uint32_t mesh) const
+	{
+		return m_meshes[mesh];
+	}
 	uint32_t GetBoneCount(uint32_t mesh) const;
 	uint32_t GetDeformation(uint32_t mesh, mat4* dst, size_t dstsize) const;
 	
-	uint32_t GetMaterialCount(uint32_t mesh) const;
+	//uint32_t GetMaterialCount(uint32_t mesh) const;
 	MaterialInfo* GetMaterial(uint32_t mesh, uint32_t material) const;
 	void GetPrimitive(uint32_t mesh, uint32_t material, PrimitiveBatchPNCTAW* primitive);
 

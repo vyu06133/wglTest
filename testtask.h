@@ -285,18 +285,22 @@ public:
 class FBX : public TaskBase
 {
 public:
-	UFBXAsset ufbx_;
+	FBXAsset fbx_;
 	DrawBuffer<VertexPNCTAW> m_pnctaw;
 	DrawBuffer<VertexPNCTA> m_pncta;
 	DrawBuffer<VertexPNCT> m_pnct;
 	DrawBuffer<VertexPC> m_pc;
+#define FBX_DEFORM_SHADER true
 	virtual void OnTick(float deltaTime)
 	{
 		auto app = ts->GetApp();
 		auto& kb = app->m_Keyboard;
-		ufbx_.SetRootTransform(MyMath::CreateTranslation(vec3(-15.0f, 0.0f, 0.0f))*MyMath::CreateScaling(vec3(0.2f)));
+		fbx_.SetRootTransform(MyMath::CreateTranslation(vec3(0.0f, 0.0f, 20.0f))*MyMath::CreateScaling(vec3(0.2f)));
 
-		ufbx_.Update(deltaTime);
+		fbx_.Update(deltaTime);
+#if !FBX_DEFORM_SHADER
+		fbx_.DeformBoneWeight();
+#endif
 	}
 	virtual void OnDraw()
 	{
@@ -315,14 +319,28 @@ public:
 		//app->m_Material.Data().ambientColor = vec4(MyMath::Abs(MyMath::Sin(elapsed) * 5.f), 0, MyMath::Abs(MyMath::Sin(elapsed * 1.f)), 1.0f);
 		//app->m_Material.Data().emmisiveColor;// = vec4(MyMath::mt.randf(), MyMath::mt.randf(), MyMath::mt.randf(), 1.0f);
 
+#if FBX_DEFORM_SHADER
+		prog.UpdateUniformu("u_EnableDeform", 1);
+#else
 		prog.UpdateUniformu("u_EnableDeform", 0);
-		ufbx_.DeformBoneWeight();
-		for (auto mesh = 0u; mesh < ufbx_.GetMeshCount(); mesh++)
+#endif
+		for (auto mesh = 0u; mesh < fbx_.GetMeshCount(); mesh++)
 		{
-			for (auto group = 0u; group < ufbx_.GetMaterialGroupCount(mesh); group++)
+#if FBX_DEFORM_SHADER
+			//auto deformMatCnt =  ufbx_.GetDeformMatrixCount(mesh);
+			//std::vector<mat4> deformMats(deformMatCnt);
+			//ufbx_.GetDeformMatrix(mesh, deformMats.data(), deformMatCnt);
+			//auto& matPalet = app->m_MatrixPalette;
+			//std::memcpy(matPalet.Data().Matrices, deformMats.data(), sizeof(mat4) * std::min(matPalet.Data().MAX_PALETTE_SIZE, deformMatCnt));
+			//matPalet.SendToGPU();
+			fbx_.GetDeformation(mesh, app->m_MatrixPalette.Data().Matrices, App::MatrixPalette::MAX_PALETTE_SIZE);
+			app->m_MatrixPalette.SendToGPU();
+#endif
+			auto minf = fbx_.GetMeshInfo(mesh);
+			for (auto group = 0u; group < fbx_.GetMaterialGroupCount(mesh); group++)
 			{
-				auto geom = ufbx_.GetMaterialGeometry(mesh, group);
-				auto mat = ufbx_.GetMaterialInfo(geom->material);
+				auto geom = fbx_.GetMaterialGeometry(mesh, group);
+				auto mat = fbx_.GetMaterialInfo(mesh,geom->material);
 				//TRACE("%d %d %s\n", mesh, material, mat->textureFile.c_str());
 				if (mat)
 				{
@@ -338,18 +356,33 @@ public:
 						mat->texture->BindTexture();
 						prog.UpdateUniformu("u_EnableTexture", 1);
 					}
+					else
+					{
+						prog.UpdateUniformu("u_EnableTexture", 0);
+					}
 				}
-			m_pncta.Init(prog);
-			m_pncta.Begin(GL_TRIANGLES);
-			m_pncta.Vertex(geom->deform);
-			m_pncta.End();
+#if FBX_DEFORM_SHADER
+				std::vector<VertexPNCTAW> verts;
+				fbx_.GetMeshPrim(mesh, group, &verts);
+				m_pnctaw.Begin(GL_TRIANGLES);
+				m_pnctaw.Vertex(verts);
+				m_pnctaw.End();
+#else
+				std::vector<VertexPNCTA> verts;
+				fbx_.GetMeshPrim(mesh, group, &verts);//note:deformバッファからgroup考慮アリで取得せねば
+				m_pncta.Begin(GL_TRIANGLES);
+				m_pncta.Vertex(verts);
+				m_pncta.End();
+#endif
 			}
 		}
+		prog.UpdateUniformu("u_EnableDeform", 0);
+		
 		prog.UpdateUniformu("u_EnableFixedColor", 1);
 		prog.UpdateUniformu("u_EnableFixedColor", 0);
 		prog.UpdateUniformvec4("u_FixedColor", vec4(1.0f,1.0f,1.0f,1.0f));
 		std::vector<VertexPC> pc;
-		ufbx_.GetSkeleton(&pc);
+		fbx_.RenderBone(&pc);//	fbx_.GetSkeleton(&pc);
 		prog.UpdateUniformvec4("u_FixedColor", vec4(0.0f,1.0f,1.0f,1.0f));
 		m_pc.Init(prog);
 		m_pc.Begin(GL_LINES);
@@ -361,23 +394,14 @@ public:
 	{
 		ASSERT(ts);
 		auto app = ts->GetApp();
+		m_pncta.Init(app->m_BasicShader);
+		m_pnctaw.Init(app->m_BasicShader);
 		std::vector<VertexPC> pc;
 		std::vector<VertexPNCTAW> pnctaw(6000);
-//		ufbx_.LoadAsset("Assets\\fbx\\The Boss - BoomBoomBass.fbx", 1);
 //		ufbx_.LoadAsset("Assets\\fbx\\ruru - street dance.fbx", 1);
-		ufbx_.LoadAsset("Assets\\fbx\\ruru - Hip Hop Dancing (2).fbx", 0);
-//		ufbx_.LoadAsset("Assets\\fbx\\256Ruru\\fbx\\Hip Hop Dancing.fbx");
-	//	ufbx_.LoadAsset("Assets\\fbx\\The Boss - Hip Hop Dancing.fbx");
+		fbx_.LoadAsset("Assets\\fbx\\ruru - Hip Hop Dancing (2).fbx");
 //		fbx_.LoadAsset("Assets\\fbx\\The Boss - Hip Hop Dancing.fbx");
-		//fbx_.LoadAsset("Assets\\fbx\\256Ruru\\fbx\\Thriller Idle.fbx");
-		//fbx_.AddAnim("Assets\\fbx\\256Ruru\\fbx\\Thriller Part 1.fbx");
-		//fbx_.AddAnim("Assets\\fbx\\256Ruru\\fbx\\Thriller Part 2.fbx");
-		//fbx_.AddAnim("Assets\\fbx\\256Ruru\\fbx\\Thriller Part 3.fbx");
-		//fbx_.AddAnim("Assets\\fbx\\256Ruru\\fbx\\Thriller Part 4.fbx");
-		//fbx_.AddAnim("Assets\\fbx\\256Ruru\\fbx\\Hip Hop Dancing.fbx");
-		//fbx_.AddAnim("Assets\\fbx\\256Ruru\\fbx\\Punching Bag.fbx");
-		//ufbx_.AddVMDAsset("Assets\\mmd\\bibbidiba_Short_Last〆付き_表情付き.vmd");
-		ufbx_.SetRootTransform(MyMath::CreateScaling(vec3(0.1f)));
+		fbx_.SetRootTransform(MyMath::CreateScaling(vec3(0.1f)));
 		TRACE("Setup VertexPC for Bone\n");
 		TRACE("Setup VertexPNCTAW for Mesh\n");
 //		constants_.Gen();
@@ -388,6 +412,136 @@ public:
 	}
 	virtual void OnDestroy() {}
 };
+
+class UFBX : public TaskBase
+{
+public:
+	UFBXAsset ufbx_;
+	DrawBuffer<VertexPNCTAW> m_pnctaw;
+	DrawBuffer<VertexPNCTA> m_pncta;
+	DrawBuffer<VertexPNCT> m_pnct;
+	DrawBuffer<VertexPC> m_pc;
+	UFBXAsset::Geometry* geom0;
+	UFBXAsset::Geometry* geom1;
+	virtual void OnTick(float deltaTime)
+	{
+		auto app = ts->GetApp();
+		auto& kb = app->m_Keyboard;
+		ufbx_.SetRootTransform(MyMath::CreateTranslation(vec3(-15.0f, 0.0f, 0.0f)) * MyMath::CreateScaling(vec3(0.2f)));
+
+		ufbx_.Update(deltaTime);
+	}
+#define UFBX_DEFORM_SHADER 1
+	virtual void OnDraw()
+	{
+		auto app = ts->GetApp();
+		auto& prog = app->m_BasicShader;
+		app->m_LightInfo.SendToGPU();
+		auto& constants = app->m_Constants;
+		constants.Data().SetWorld(worldMatrix);
+		constants.SendToGPU();
+
+		auto& material = app->m_Material;
+
+#if UFBX_DEFORM_SHADER
+		prog.UpdateUniformu("u_EnableDeform", 1);
+ufbx_.DeformBoneWeight();
+#else
+		prog.UpdateUniformu("u_EnableDeform", 0);
+		ufbx_.DeformBoneWeight();
+#endif
+		auto meshCount = ufbx_.GetMeshCount();
+		for (auto mesh = 0u; mesh < meshCount; mesh++)
+		{
+			auto meshinf = ufbx_.GetMeshInfo(mesh);
+#if UFBX_DEFORM_SHADER
+			ufbx_.GetDeformMatrix(mesh, app->m_MatrixPalette.Data().Matrices, App::MatrixPalette::MAX_PALETTE_SIZE);
+
+			prog.UpdateUniformu("u_EnableDeform", 1);
+			ufbx_.GetDeformMatrix(mesh, app->m_MatrixPalette.Data().Matrices, App::MatrixPalette::MAX_PALETTE_SIZE);
+			app->m_MatrixPalette.SendToGPU();
+#endif
+			auto groupCount = ufbx_.GetMaterialGroupCount(mesh);
+			for (auto group = 0u; group < groupCount; group++)
+			{
+				auto geom = ufbx_.GetMaterialGeometry(mesh, group);
+				auto mat = ufbx_.GetMaterialInfo(geom->material);
+				if (mat)
+				{
+					material.Data().ambientColor = mat->ambient;
+					material.Data().diffuseColor = mat->diffuse;
+					material.Data().emmisiveColor = mat->emmisive;
+					material.Data().specularColor = mat->specular;
+					material.Data().shininess = mat->shininess;
+					material.SendToGPU();
+
+					if (mat->texture)
+					{
+						mat->texture->BindTexture();
+						prog.UpdateUniformu("u_EnableTexture", 1);
+					}
+					else
+					{
+						Texture2D::UnbindTexture();
+						prog.UpdateUniformu("u_EnableTexture", 0);
+					}
+#if 0&&UFBX_DEFORM_SHADER
+					prog.UpdateUniformu("u_debugFragColor", 1);
+//					prog.UpdateUniformu("u_debugFragColor", 1);
+//					prog.UpdateUniformu("u_EnableLighting", 0);
+//					prog.UpdateUniformu("u_EnableTexture", 0);
+					m_pnctaw.Begin(GL_TRIANGLES);
+					m_pnctaw.Vertex(geom->vbuf);//bug：GLSLにboneWeight渡せてないかも？
+					m_pnctaw.End();
+					prog.UpdateUniformu("u_debugFragColor", 0);
+					prog.UpdateUniformu("u_EnablePrimitiveColor", 0);
+#else
+					prog.UpdateUniformu("u_EnableDeform", 0);
+					m_pncta.Begin(GL_TRIANGLES);
+					m_pncta.Vertex(geom->deform);//note:デフォームをCPUで処理するこっちだと思わしい表示出来る
+					m_pncta.End();
+#endif
+				}
+			}
+		}
+		prog.UpdateUniformu("u_EnableDeform", 0);
+
+		prog.UpdateUniformu("u_EnableFixedColor", 1);
+		prog.UpdateUniformu("u_EnableFixedColor", 0);
+		prog.UpdateUniformvec4("u_FixedColor", vec4(1.0f, 1.0f, 1.0f, 1.0f));
+		std::vector<VertexPC> pc;
+		ufbx_.GetSkeleton(&pc);
+		prog.UpdateUniformvec4("u_FixedColor", vec4(0.0f, 1.0f, 1.0f, 1.0f));
+		m_pc.Init(prog);
+		m_pc.Begin(GL_LINES);
+		m_pc.Vertex(pc);
+		m_pc.End();
+		prog.UpdateUniformu("u_EnableFixedColor", 0);
+	}
+	virtual void OnCreate()
+	{
+		ASSERT(ts);
+		auto app = ts->GetApp();
+		m_pncta.Init(app->m_BasicShader);
+		m_pnctaw.Init(app->m_BasicShader);
+		std::vector<VertexPC> pc;
+		std::vector<VertexPNCTAW> pnctaw(6000);
+		auto fname = "Assets\\fbx\\The Boss - BoomBoomBass.fbx";
+		auto anim = 0;
+		fname = "Assets\\fbx\\ruru - Hip Hop Dancing (2).fbx";
+		ufbx_.LoadAsset(fname, anim);
+		ufbx_.SetRootTransform(MyMath::CreateScaling(vec3(0.1f)));
+		//		constants_.Gen();
+		//		constants_.Bind(app->m_BasicShader, "Constants");
+		//		material_.Gen();
+		//		material_.Bind(app->m_BasicShader, "Material");
+				//return;
+		geom0 = ufbx_.GetMaterialGeometry(0, 0);
+		geom1 = ufbx_.GetMaterialGeometry(1, 0);
+	}
+	virtual void OnDestroy() {}
+};
+
 
 class MMD : public TaskBase
 {
@@ -494,7 +648,7 @@ public:
 //		vmdFile = "Assets\\mmd\\OKPアバン（朝潮）.vmd";
 //		vmdFile = "Assets\\mmd\\MMD_HOWL_ShortMotion.vmd";
 //		vmdFile = "Assets\\mmd\\MMD_KonKoKonkonDanceMotion.vmd";
-		vmdFile = "Assets\\mmd\\ビリ モーション_01.vmd";
+//		vmdFile = "Assets\\mmd\\ビリ モーション_01.vmd";
 		mmd_.LoadVMDFromFile(vmdFile);
 		mmd_.Prepare();
 		for (auto m = 0u; m < mmd_.GetMaterialCount(); m++)
@@ -572,7 +726,8 @@ public:
 		ts3d->CreateTask<Camera>(nullptr, "Camera");
 		ts3d->CreateTask<Light>(nullptr, "Light");
 		ts3d->CreateTask<Field>(nullptr, "Field");
-		ts3d->CreateTask<FBX>(nullptr, "FBX");
+//		ts3d->CreateTask<FBX>(nullptr, "FBX");
+		ts3d->CreateTask<UFBX>(nullptr, "UFBX");
 		ts3d->CreateTask<MMD>(nullptr, "MMD");
 	}
 };

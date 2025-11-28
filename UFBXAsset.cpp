@@ -415,9 +415,9 @@ static VertexPNCTAW get_skinned_vertex(ufbx_mesh* mesh, ufbx_skin_deformer* skin
 
 	ufbx_skin_vertex skin_vertex = skin->vertices[vertex];
 	auto num_weights = skin_vertex.num_weights;
-	if (num_weights > _countof(v.bone))
+	if (num_weights > v.NUM_BONES_PER_VERTEX)
 	{
-		num_weights = _countof(v.bone);
+		num_weights = v.NUM_BONES_PER_VERTEX;
 	}
 
 	float total_weight = 0.0f;
@@ -528,14 +528,12 @@ bool UFBXAsset::ParseMesh_BoneWeight(MeshInfo* meshinfo)
 
 			meshinfo->vbuf_.clear();
 			meshinfo->ibuf_.clear();
-//			meshinfo->mbuf_.clear();
 			meshinfo->pointsCount = (uint32_t)result.vertices.size();
 			for (auto i = 0u; i < result.vertices.size(); i++)
 			{
 				auto& v = result.vertices[i];
 				meshinfo->vbuf_.push_back(v);
 				meshinfo->ibuf_.push_back(i);
-//				meshinfo->mbuf_.push_back(matIndex);
 			}
 			auto si = &meshinfo->skin;
 			for (auto& bone : result.bones)
@@ -655,7 +653,7 @@ void UFBXAsset::Update(float delta)
 #endif
 }
 
-int UFBXAsset::GetDeformMatrixCount(uint32_t mesh) const
+size_t UFBXAsset::GetDeformMatrixCount(uint32_t mesh) const
 {
 	return GetBoneCount(mesh);
 }

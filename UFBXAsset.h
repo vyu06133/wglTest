@@ -225,7 +225,7 @@ public:
 	struct Geometry
 	{
 		Geometry() = default;
-		Geometry(int32_t mat) :material(mat) {};
+		Geometry(int32_t mat) : material(mat) {};
 		int32_t material = 0;
 		uint32_t pointsCount = 0;
 		std::vector<VertexPNCTAW> vbuf;
@@ -387,7 +387,7 @@ public:
 	void GetDeformed(std::vector<VertexPNCTAW>* pnctaw, uint32_t meshIndex = 0, uint32_t material = 0);
 	void DeleteAsset();
 	void Update(float delta);
-	int GetDeformMatrixCount(uint32_t mesh) const;
+	size_t GetDeformMatrixCount(uint32_t mesh) const;
 	void GetDeformMatrix(uint32_t mesh, mat4* dst, size_t dstCount) const;
 	void GetDeformMatrix(const MeshInfo* mesh, mat4* dst, size_t dstCount) const;
 	void GetSkeleton(std::vector<VertexPC>* primitive);

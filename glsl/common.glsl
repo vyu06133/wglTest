@@ -42,6 +42,7 @@ uniform int u_EnableLighting;
 uniform int u_EnableFixedColor;
 uniform vec4 u_FixedColor;
 uniform int u_EnablePrimitiveColor;
+uniform int u_DebugFragColor;
 
 vec4 calculateLighting(vec3 position, vec3 normal, vec4 textureColor)
 {

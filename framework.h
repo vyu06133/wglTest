@@ -173,6 +173,7 @@ inline static std::string HRESULT_MESSAGE(HRESULT h) std::string()
 using glm::vec2;
 using glm::vec3;
 using glm::vec4;
+using glm::uvec4;
 using glm::mat3;
 using glm::mat4;
 using glm::quat;

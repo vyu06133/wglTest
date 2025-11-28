@@ -5,6 +5,7 @@
 #pragma once
 #include "framework.h"
 
+#pragma pack(push,1)
 struct Vertex
 {
 	template <typename T, typename M>
@@ -255,9 +256,15 @@ public:
 };
 
 #if 1//Vertex****Wに生のPODタイプとして入れた∵PODでないとうまくシェーダに渡らないことがある
+#if 0
 #define DeclBoneWeight uint32_t bone[4];float weight[4];
 #define ClearBoneWeight() do{std::memset(bone, 0, sizeof(bone));std::memset(weight, 0, sizeof(weight));}while(0)
 #define CopyBoneWeight(BONE, WEIGHT)	do{	std::memcpy(bone, BONE, sizeof(BONE));	std::memcpy(weight, WEIGHT, sizeof(WEIGHT));}while(0)
+#else
+#endif
+#define DeclBoneWeight glm::uvec4 bone;glm::vec4 weight;
+#define ClearBoneWeight() do{bone=glm::uvec4(0);weight=glm::vec4(0.0f);}while(0)
+#define CopyBoneWeight(BONE, WEIGHT)	do{	bone=BONE;	weight=WEIGHT;}while(0)
 #else
 // ボーンウェイト情報
 struct BoneWeight
@@ -304,21 +311,24 @@ struct BoneWeight
 struct VertexPNW : public Vertex
 {
 public:
+	static const int NUM_BONES_PER_VERTEX = 4;
 	vec3 pos;
 	vec3 normal;
-	DeclBoneWeight;
+	uint32_t bone[NUM_BONES_PER_VERTEX];
+	float weight[NUM_BONES_PER_VERTEX];
 	inline void Reset()
 	{
 		*this = VertexPNW();
 	}
 	inline void ResetBoneWeight()
 	{
-		ClearBoneWeight();
+		ZeroMemory( bone, sizeof(bone) );
+		ZeroMemory( weight, sizeof(weight) );
 	}
 	inline bool AddBoneData(uint32_t BoneID, float Weight)
 	{
-		static_assert(_countof(bone) == _countof(weight));
-		for (auto i = 0; i < _countof(bone); i++)
+		//static_assert(_countof(bone) == _countof(weight));
+		for (auto i = 0; i < NUM_BONES_PER_VERTEX; i++)
 		{
 			if (weight[i] == 0.0f)
 			{
@@ -331,10 +341,10 @@ public:
 	}
 	inline void SortBoneWeight()
 	{
-		static_assert(_countof(bone) == _countof(weight));
-		for (auto i = 0; i < _countof(bone) - 1; i++)
+		//static_assert(_countof(bone) == _countof(weight));
+		for (auto i = 0; i < NUM_BONES_PER_VERTEX - 1; i++)
 		{
-			for (auto j = i + 1; j < _countof(bone); j++)
+			for (auto j = i + 1; j < NUM_BONES_PER_VERTEX; j++)
 			{
 				if (weight[i] < weight[j])
 				{
@@ -344,28 +354,38 @@ public:
 			}
 		}
 	}
+	VertexPNW(const VertexPNW& src) : pos(src.pos), normal(src.normal)
+	{
+		std::memcpy(bone, src.bone, sizeof(bone));
+		std::memcpy(weight, src.weight, sizeof(weight));
+	}
 	VertexPNW() : pos(1.0f), normal(1.0f)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNW(const vec3& P) : pos(P), normal(0.0f)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNW(const vec3& P, const vec3& N) : pos(P), normal(N)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNW(const float& PX, const float& PY, const float& PZ,
 		const float& NX, const float& NY, const float& NZ,
 		const float& U, const float& V)
 		: pos(PX, PY, PZ), normal(NX, NY, NZ)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNW(const vec3& P, const vec3& N, const uint32_t BONE[4], const float WEIGHT[4]) : pos(P), normal(N)
 	{
-		CopyBoneWeight(BONE, WEIGHT);
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNW(const float& PX, const float& PY, const float& PZ,
 		const float& NX, const float& NY, const float& NZ,
@@ -373,7 +393,8 @@ public:
 		const uint32_t BONE[4], const float WEIGHT[4])
 		: pos(PX, PY, PZ), normal(NX, NY, NZ)
 	{
-		CopyBoneWeight(BONE, WEIGHT);
+		std::memcpy(bone, BONE, sizeof(bone));
+		std::memcpy(weight, WEIGHT, sizeof(weight));
 	}
 
 	inline static void BindAttributes(GLuint program, const VertexPNW* baseptr = nullptr)
@@ -393,22 +414,25 @@ public:
 struct VertexPNTW : public Vertex
 {
 public:
+	static const int NUM_BONES_PER_VERTEX = 4;
 	vec3 pos;
 	vec3 normal;
 	vec2 texcoord;
-	DeclBoneWeight;
+	uint32_t bone[NUM_BONES_PER_VERTEX];
+	float weight[NUM_BONES_PER_VERTEX];
 	inline void Reset()
 	{
 		*this = VertexPNTW();
 	}
 	inline void ResetBoneWeight()
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	inline bool AddBoneData(uint32_t BoneID, float Weight)
 	{
-		static_assert(_countof(bone) == _countof(weight));
-		for (auto i = 0; i < _countof(bone); i++)
+//		static_assert(_countof(bone) == _countof(weight));
+		for (auto i = 0; i < NUM_BONES_PER_VERTEX; i++)
 		{
 			if (weight[i] == 0.0f)
 			{
@@ -421,10 +445,10 @@ public:
 	}
 	inline void SortBoneWeight()
 	{
-		static_assert(_countof(bone) == _countof(weight));
-		for (auto i = 0; i < _countof(bone) - 1; i++)
+//		static_assert(_countof(bone) == _countof(weight));
+		for (auto i = 0; i < NUM_BONES_PER_VERTEX - 1; i++)
 		{
-			for (auto j = i + 1; j < _countof(bone); j++)
+			for (auto j = i + 1; j < NUM_BONES_PER_VERTEX; j++)
 			{
 				if (weight[i] < weight[j])
 				{
@@ -434,28 +458,38 @@ public:
 			}
 		}
 	}
+	VertexPNTW(const VertexPNTW& src) : pos(src.pos), normal(src.normal), texcoord(src.texcoord)
+	{
+		std::memcpy(bone, src.bone, sizeof(bone));
+		std::memcpy(weight, src.weight, sizeof(weight));
+	}
 	VertexPNTW() : pos(1.0f), normal(1.0f), texcoord(0.0f)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNTW(const vec3& P) : pos(P), normal(0.0f), texcoord(0.0f)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNTW(const vec3& P, const vec3& N, const vec2& T) : pos(P), normal(N), texcoord(T)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNTW(const float& PX, const float& PY, const float& PZ,
 		const float& NX, const float& NY, const float& NZ,
 		const float& U, const float& V)
 		: pos(PX, PY, PZ), normal(NX, NY, NZ), texcoord(U, V)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNTW(const vec3& P, const vec3& N, const vec2& T, const uint32_t BONE[4], const float WEIGHT[4]) : pos(P), normal(N), texcoord(T)
 	{
-		CopyBoneWeight(BONE, WEIGHT);
+		std::memcpy(bone, BONE, sizeof(bone));
+		std::memcpy(weight, WEIGHT, sizeof(weight));
 	}
 	VertexPNTW(const float& PX, const float& PY, const float& PZ,
 		const float& NX, const float& NY, const float& NZ,
@@ -463,7 +497,8 @@ public:
 		const uint32_t BONE[4], const float WEIGHT[4])
 		: pos(PX, PY, PZ), normal(NX, NY, NZ), texcoord(U, V)
 	{
-		CopyBoneWeight( BONE, WEIGHT);
+		std::memcpy(bone, BONE, sizeof(bone));
+		std::memcpy(weight, WEIGHT, sizeof(weight));
 	}
 
 	inline static void BindAttributes(GLuint program, const VertexPNTW* baseptr = nullptr)
@@ -484,24 +519,27 @@ public:
 struct VertexPNCTAW : public Vertex
 {
 public:
+	static const int NUM_BONES_PER_VERTEX = 4;
 	vec3 pos;
 	vec3 normal;
 	vec4 color;
 	vec2 texcoord;
 	vec3 tangent;
-	DeclBoneWeight;
+	uint32_t bone[NUM_BONES_PER_VERTEX];
+	float weight[NUM_BONES_PER_VERTEX];
 	inline void Reset()
 	{
 		*this = VertexPNCTAW();
 	}
 	inline void ResetBoneWeight()
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	inline bool AddBoneWeight(uint32_t BoneID, float Weight)
 	{
-		static_assert(_countof(bone) == _countof(weight));
-		for (auto i = 0; i < _countof(bone); i++)
+//		static_assert(_countof(bone) == _countof(weight));
+		for (auto i = 0; i < NUM_BONES_PER_VERTEX; i++)
 		{
 			if (weight[i] == 0.0f)
 			{
@@ -514,10 +552,10 @@ public:
 	}
 	inline void SortBoneWeight()
 	{
-		static_assert(_countof(bone) == _countof(weight));
-		for (auto i = 0; i < _countof(bone) - 1; i++)
+//		static_assert(_countof(bone) == _countof(weight));
+		for (auto i = 0; i < NUM_BONES_PER_VERTEX - 1; i++)
 		{
-			for (auto j = i + 1; j < _countof(bone); j++)
+			for (auto j = i + 1; j < NUM_BONES_PER_VERTEX; j++)
 			{
 				if (weight[i] < weight[j])
 				{
@@ -527,33 +565,45 @@ public:
 			}
 		}
 	}
+	VertexPNCTAW(const VertexPNCTAW& src) : pos(src.pos), normal(src.normal), color(src.color), texcoord(src.texcoord), tangent(src.tangent)
+	{
+		std::memcpy(bone, src.bone, sizeof(bone));
+		std::memcpy(weight, src.weight, sizeof(weight));
+	}
 	VertexPNCTAW() : pos(1.0f), normal(1.0f), color(1.0f), texcoord(0.0f), tangent(0.0f)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNCTAW(const vec3& P) : pos(P), normal(0.0f), color(1.0f), texcoord(0.0f), tangent(0.0f)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNCTAW(const VertexPC& PC) : pos(PC.pos), normal(0.0f), color(PC.color), texcoord(0.0f), tangent(0.0f)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNCTAW(const VertexPNC& PNC) : pos(PNC.pos), normal(PNC.normal), color(PNC.color), texcoord(0.0f), tangent(0.0f)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNCTAW(const VertexPNCT& PNCT) : pos(PNCT.pos), normal(PNCT.normal), color(PNCT.color), texcoord(PNCT.texcoord), tangent(0.0f)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNCTAW(const vec3& P, const vec3& N, const vec4& C, const vec2& T, const vec3& A, const uint32_t BONE[4], const float WEIGHT[4]) : pos(P), normal(N), color(C), texcoord(T), tangent(A)
 	{
-		CopyBoneWeight(BONE, WEIGHT);
+		std::memcpy(bone, BONE, sizeof(bone));
+		std::memcpy(weight, WEIGHT, sizeof(weight));
 	}
 	VertexPNCTAW(const vec3& P, const vec3& N, const vec4& C, const vec2& T, const vec3& A) : pos(P), normal(N), color(C), texcoord(T), tangent(A)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 	VertexPNCTAW(const float& PX, const float& PY, const float& PZ,
 		const float& NX, const float& NY, const float& NZ,
@@ -563,7 +613,8 @@ public:
 		const uint32_t BONE[4], const float WEIGHT[4])
 		: pos(PX, PY, PZ), normal(NX, NY, NZ), color(R, G, B, A), texcoord(U, V), tangent(AX, AY, AZ)
 	{
-		CopyBoneWeight(BONE, WEIGHT);
+		std::memcpy(bone, BONE, sizeof(bone));
+		std::memcpy(weight, WEIGHT, sizeof(weight));
 	}
 	VertexPNCTAW(const float& PX, const float& PY, const float& PZ,
 		const float& NX, const float& NY, const float& NZ,
@@ -572,7 +623,8 @@ public:
 		const float& AX, const float& AY, const float& AZ)
 		: pos(PX, PY, PZ), normal(NX, NY, NZ), color(R, G, B, A), texcoord(U, V), tangent(AX, AY, AZ)
 	{
-		ClearBoneWeight();
+		ZeroMemory(bone, sizeof(bone));
+		ZeroMemory(weight, sizeof(weight));
 	}
 
 
@@ -592,6 +644,7 @@ public:
 		Vertex::EnableAttrib(program, "a_weight", 4, GL_FLOAT, sizeof(VertexPNCTAW), offset_of(&VertexPNCTAW::weight), baseptr);
 	}
 };
+#pragma pack(pop)
 
 
 

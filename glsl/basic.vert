@@ -62,11 +62,15 @@ DeformOut Skinning(DeformIn di)
 				o.tangent += normalMatrix * di.tangent * weight;
 			}
 		}
+sum=0;
 		if (sum != 0)
 		{
 			o.color = di.color;
 			o.normal = normalize(o.normal);
 			o.tangent = normalize(o.tangent);
+
+			o.position = di.position;
+			o.color = di.weights;
 			return o;
 		}
 		else
@@ -75,6 +79,10 @@ DeformOut Skinning(DeformIn di)
 			o.normal = di.normal;
 			o.color = di.color;
 			o.tangent = di.tangent;
+
+			o.position = di.position;
+			o.color = di.weights;
+			
 			return o;
 		}
 	}

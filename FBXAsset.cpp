@@ -554,6 +554,7 @@ bool FBXAsset::ParseMeshCP(MeshInfo* meshinfo)
 	meshinfo->pointsCount = static_cast<uint32_t>(pointsCount);
 	meshinfo->vbuf_.resize(pointsCount);
 	meshinfo->cp_.resize(pointsCount);
+	std::memset(meshinfo->cp_.data(), 0, sizeof(meshinfo->cp_[0]) * meshinfo->cp_.size());
 	meshinfo->deform_.resize(pointsCount);
 	
 	// インデックスバッファ
@@ -1606,7 +1607,8 @@ void FBXAsset::DeformBoneWeight()
 			auto& inVertex = mesh->vbuf_[i];
 			mesh->deform_[i].pos = vec3(0.0f);
 			mesh->deform_[i].normal = vec3(0.0f);
-			for (auto j = 0; j < _countof(inVertex.bone); j++)
+//			for (auto j = 0; j < _countof(inVertex.bone); j++)
+			for (auto j = 0; j < 4; j++)
 			{
 				auto w = inVertex.weight[j];
 				if (w == 0.0f)
@@ -1614,6 +1616,7 @@ void FBXAsset::DeformBoneWeight()
 					break;
 				}
 				auto b = inVertex.bone[j];
+				ASSERT((uint32_t)b < clusterDeformations.size());
 				mesh->deform_[i].pos += MyTransform(clusterDeformations[b], inVertex.pos) * w;
 				mesh->deform_[i].normal += MyTransformNormal(clusterDeformations[b], inVertex.normal) * w;
 			}
