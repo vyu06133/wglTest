@@ -157,11 +157,13 @@ GL_TRIANGLES : 三角形ポリゴン．
 		glGetProgramiv(progId_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxLength);
 		glGetProgramiv(progId_, GL_ACTIVE_ATTRIBUTES, &nAttribs);
 
-		name.resize(maxLength);
+		name.resize(maxLength, 0);
 
+		TRACE(" DumpActiveAttribute\n");
 		TRACE(" Index | Name\n");
 		TRACE("------------------------------------------------\n");
-		for (int i = 0; i < nAttribs; i++) {
+		for (auto i = 0; i < nAttribs; i++)
+		{
 			glGetActiveAttrib(progId_, i, maxLength, &written, &size, &type, name.data());
 			location = glGetAttribLocation(progId_, name.data());
 			TRACE(" %-5d | %s\n", location, name.data());
@@ -179,23 +181,25 @@ GL_TRIANGLES : 三角形ポリゴン．
 		glGetProgramiv(progId_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxLen);
 		glGetProgramiv(progId_, GL_ACTIVE_UNIFORMS, &nUniforms);
 
-		name.resize(maxLen);
+		name.resize(maxLen, 0);
 
+		TRACE(" DumpActiveUniform\n");
 		TRACE(" Location | Name\n");
 		TRACE("------------------------------------------------\n");
-		for (int i = 0; i < nUniforms; ++i)
+		for (auto i = 0; i < nUniforms; i++)
 		{
 			glGetActiveUniform(progId_, i, maxLen, &written, &size, &type, name.data());
 			location = glGetUniformLocation(progId_, name.data());
 			TRACE(" %-8d | %s\n", location, name.data());
 		}
-
 	}
+
 	void Dump()
 	{
 		TRACE("ProgramID:%u\n", progId_);
 		if (!progId_)
 		{
+			assert(false);
 			return;
 		}
 		GLint numShader;

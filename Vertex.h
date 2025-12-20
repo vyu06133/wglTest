@@ -28,8 +28,8 @@ public:
 	inline static void EnableAttrib(GLuint program, const char* name, GLint size, GLenum type,
 		GLsizei stride, size_t ofs, const void* baseptr = nullptr)
 	{
-		//TRACE("%s %dx%s %d %zu\n", name, size, glEnumMap[type], stride, ofs);
 		GLint loc = glGetAttribLocation(program, name);
+		TRACE("%s(loc=%d) %dx%s %d %zu\n", name, loc, size, glEnumMap[type], stride, ofs);
 		if (loc >= 0)
 		{
 			if (type == GL_BYTE || type == GL_UNSIGNED_BYTE ||
@@ -46,8 +46,44 @@ public:
 			}
 			else
 			{
+				//サポートしない型
 				assert(false);
 			}
+		}
+		else
+		{
+			//アトリビュート見つからない
+			//assert(false);
+		}
+	}
+	inline static void EnableAttrib(GLuint program, GLint loc, GLint size, GLenum type,
+		GLsizei stride, size_t ofs, const void* baseptr = nullptr)
+	{
+		TRACE("loc=%d %dx%s %d %zu\n", loc, size, glEnumMap[type], stride, ofs);
+		if (loc >= 0)
+		{
+			if (type == GL_BYTE || type == GL_UNSIGNED_BYTE ||
+				type == GL_SHORT || type == GL_UNSIGNED_SHORT ||
+				type == GL_INT || type == GL_UNSIGNED_INT)
+			{
+				glVertexAttribIPointer(loc, size, type, stride, (void*)((char*)baseptr + ofs));
+				glEnableVertexAttribArray(loc);
+			}
+			else if (type == GL_FLOAT)
+			{
+				glVertexAttribPointer(loc, size, type, GL_FALSE, stride, (void*)((char*)baseptr + ofs));
+				glEnableVertexAttribArray(loc);
+			}
+			else
+			{
+				//サポートしない型
+				assert(false);
+			}
+		}
+		else
+		{
+			//アトリビュート見つからない
+			//assert(false);
 		}
 	}
 	template<typename T>

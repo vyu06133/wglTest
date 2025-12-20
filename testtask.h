@@ -485,11 +485,9 @@ ufbx_.DeformBoneWeight();
 						Texture2D::UnbindTexture();
 						prog.UpdateUniformu("u_EnableTexture", 0);
 					}
-#if 0&&UFBX_DEFORM_SHADER
-					prog.UpdateUniformu("u_debugFragColor", 1);
-//					prog.UpdateUniformu("u_debugFragColor", 1);
-//					prog.UpdateUniformu("u_EnableLighting", 0);
-//					prog.UpdateUniformu("u_EnableTexture", 0);
+#if 0
+//#ifでcpu deform / shader deform切り替えコンパイル
+#if UFBX_DEFORM_SHADER
 					m_pnctaw.Begin(GL_TRIANGLES);
 					m_pnctaw.Vertex(geom->vbuf);//bug：GLSLにboneWeight渡せてないかも？
 					m_pnctaw.End();
@@ -497,9 +495,28 @@ ufbx_.DeformBoneWeight();
 					prog.UpdateUniformu("u_EnablePrimitiveColor", 0);
 #else
 					prog.UpdateUniformu("u_EnableDeform", 0);
-					m_pncta.Begin(GL_TRIANGLES);
-					m_pncta.Vertex(geom->deform);//note:デフォームをCPUで処理するこっちだと思わしい表示出来る
-					m_pncta.End();
+					//m_pncta.Begin(GL_TRIANGLES);
+					//m_pncta.Vertex(geom->deform);//note:デフォームをCPUで処理するこっちだと思わしい表示出来る
+					//m_pncta.End();
+#endif
+#else
+//cpu→GLSLにうまくbone&weight渡せてない(?)ので、確認するコード※bone&weightの値は正しい∵CPUデフォームが期待通りである
+					prog.UpdateUniformu("u_EnableDeform", 0);
+					prog.UpdateUniformu("u_debugFragColor", 0);
+					prog.UpdateUniformu("u_EnablePrimitiveColor", 0);
+					prog.UpdateUniformu("u_EnableTexture", 0);
+					m_pnctaw.Begin(GL_TRIANGLES);
+					auto vi = geom->vbuf.begin();
+					for (const auto& d : geom->deform)
+					{
+						//cpuデフォームしたposition、normal、tangentとbone、weightをGLSLに渡す　それを可視化することでチェックしよう
+					//	VertexPNCTAW v(d.pos, d.normal, d.color, d.texcoord, d.tangent, vi->bone, vi->weight);
+						float w[] = { 1.0f, 0.0f, 1.0f, 0.0f };
+						VertexPNCTAW v(d.pos, d.normal, d.color, d.texcoord, d.tangent, vi->bone, w );
+						++vi;
+						m_pnctaw.Vertex(v);
+					}
+					m_pnctaw.End();
 #endif
 				}
 			}

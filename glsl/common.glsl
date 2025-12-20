@@ -1,5 +1,7 @@
 #version 450 compatibility
-// std140がゆるされるバージョンということで450 compatibility
+#pragma optimize(off)
+// std140が許されるバージョンで450 compatibility
+// optimizeでアトリビュートが消えないように
 #define MAX_PALETTE_SIZE	96
 #define MAX_LIGHT			8
 

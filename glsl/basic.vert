@@ -1,19 +1,27 @@
 #include "common.glsl"
 
-layout (location = 0) in vec3 a_position;
-layout (location = 1) in vec3 a_normal;
-layout (location = 2) in vec4 a_color;
-layout (location = 3) in vec2 a_texcoord;
-layout (location = 4) in vec3 a_tangent;
-layout (location = 5) in uvec4 a_bone;
-layout (location = 6) in vec4 a_weight;
+//in vec3 a_position;
+//in vec3 a_normal;
+//in vec4 a_color;
+//in vec2 a_texcoord;
+//in vec3 a_tangent;
+//in uvec4 a_bone;
+//in vec4 a_weight;
+in vec3 a_position;
+in vec3 a_normal;
+in vec4 a_color;
+in vec2 a_texcoord;
+in vec3 a_tangent;
+in uvec4 a_bone;
+in vec4 a_weight;
 
-out vec3 vertPos;
-out vec3 vertPosition_World;
-out vec3 vertNormal;
-out vec4 vertColor;
-out vec2 vertTexcoord;
-out vec3 vertTangent;
+
+out vec3 v_pos;
+out vec3 v_position_World;
+out vec3 v_normal;
+out vec4 v_color;
+out vec2 v_texcoord;
+out vec3 v_tangent;
 
 
 struct DeformIn
@@ -62,16 +70,11 @@ DeformOut Skinning(DeformIn di)
 				o.tangent += normalMatrix * di.tangent * weight;
 			}
 		}
-sum=0;
 		if (sum != 0)
 		{
 			o.color = di.color;
 			o.normal = normalize(o.normal);
 			o.tangent = normalize(o.tangent);
-
-			o.position = di.position;
-			o.color = di.weights;
-			return o;
 		}
 		else
 		{
@@ -79,22 +82,21 @@ sum=0;
 			o.normal = di.normal;
 			o.color = di.color;
 			o.tangent = di.tangent;
-
-			o.position = di.position;
-			o.color = di.weights;
-			
-			return o;
 		}
+o.position = di.position;//test:
+o.color = di.weights;//test:
+		return o;
 	}
 }
 
-DeformOut Bypass(DeformIn i)
+DeformOut Bypass(DeformIn di)
 {
 	DeformOut o;
-	o.position = i.position;
-	o.normal = i.normal;
-	o.color = i.color;
-	o.tangent = i.tangent;
+	o.position = di.position;
+	o.normal = di.normal;
+	o.color = di.color;
+	o.tangent = di.tangent;
+o.color = di.color*0.00001+di.weights;//optimize off:
 	return o;
 }
 
@@ -108,35 +110,19 @@ void main()
 	di.bones = a_bone;
 	di.weights = a_weight;
 	DeformOut o;
-	if (u_EnableDeform != 0)
-	{
-		o = Skinning(di);
-	}
-	else
+//	if (u_EnableDeform != 0)
+//	{
+//		o = Skinning(di);
+//	}
+//	else
 	{
 		o = Bypass(di);
 	}
 	
-	vertPos = (u_Constants.worldViewProj * vec4(o.position, 1.0f)).xyz;
-	vertNormal = o.normal;
-	vertColor = o.color;
-	vertTexcoord = a_texcoord;
-	vertTangent = o.tangent;
+	v_pos = (u_Constants.worldViewProj * vec4(o.position, 1.0f)).xyz;
+	v_normal = o.normal;
+	v_color = o.color;
+	v_texcoord = a_texcoord;
+	v_tangent = o.tangent;
 	gl_Position = u_Constants.worldViewProj * vec4(o.position, 1.0);
-//	vertPosition_World = (u_Constants.world * vec4(cpu_position, 1.0)).xyz;
-//	vertPos = (u_Constants.world * u_Constants.view * vec4(cpu_position, 1.0)).xyz;
-//	vertPos = (u_Constants.view * vec4(cpu_position, 1.0)).xyz;
-//	vertNormal = normalize(cpu_normal);
-//	vertTex = cpu_tex;
-//	vertColor = cpu_color;
-	
-/*
-	vec3 eyeNorm = normalize( u_Constants.worldInverseTranspose * cpu_Normal);
-	vec4 eyePosition = ModelViewMatrix * vec4(VertexPosition,1.0);
-
-	// Evaluate the lighting equation, for each light
-	vertColor = vec3(0.0);
-	for( int i = 0; i < MAX_LIGHT; i++ )
-		vertColor += Ads( i, eyePosition, eyeNorm );
-*/
 }

@@ -62,6 +62,8 @@
 #include <list>
 #include <map>
 #include <set>
+#include <array>
+#include <initializer_list>
 #include <unordered_map>
 #include <bitset>
 #include <algorithm>
